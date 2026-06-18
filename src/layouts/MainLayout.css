@@ -1,0 +1,54 @@
+:root {
+  --sidebar-width: 180px;
+  --sidebar-width-collapsed: 48px;
+  --header-height: 48px;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding: 12px;
+  gap: 8px;
+  background-color: var(--bg-color);
+  box-sizing: border-box;
+}
+
+.main-layout__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 8px;
+}
+
+.main-layout__panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 6px;
+}
+
+.main-layout__content {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  background-color: var(--mn-color);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.main-layout__content.no-main-scroll {
+  overflow: hidden;
+}
+
+.main-layout__content.dashboard-content,
+.main-layout__content.settings-content {
+  background: transparent;
+  border: none;
+}
+
+.main-layout--dashboard .main-layout__body {
+  gap: 0;
+}

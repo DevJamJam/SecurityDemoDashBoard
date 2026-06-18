@@ -1,0 +1,504 @@
+﻿/* =========================================================
+   AdminRoleHome ??Design4 蹂대뱶
+     matrix trend tables (admin-trend-matrix-table) /
+     design4 shared tables (design4-data-table) /
+     rate cards (design4-rate-card) /
+     unified rate chart (design4-rate-unified) /
+     process status board (design4-process-table) /
+     shared badges (admin-status-badge)
+   ========================================================= */
+
+/* ---------- matrix trend tables ---------- */
+.admin-trend-matrix-wrap,
+.design4-table-scroll,
+.design4-process-table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: thin;
+}
+
+.admin-trend-matrix-table,
+.design4-data-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* 2026-05-28 ???쒖? ?뚯씠釉??좏겙??(B ?듭뀡).
+   ???믪씠 --table-row-h, thead 媛뺤“??--table-accent 濡??듭씪.
+   ??쒕낫???꾩젽 援ъ“(.design4-data-table) ???좎??섎릺 ?쒓컖 ?좏겙留??쒖??? */
+.admin-trend-matrix-table th,
+.admin-trend-matrix-table td,
+.design4-data-table th,
+.design4-data-table td {
+  padding: 0 12px;
+  height: var(--table-row-h);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  text-align: center;
+  font-size: 13px;
+  background: var(--mn-color);
+  line-height: 1.3;
+}
+
+.admin-trend-matrix-table thead th,
+.design4-data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--mn-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  border-top: 1px solid var(--table-accent);
+  border-bottom: 1px solid var(--table-accent);
+}
+
+/* 2026-05-28 ??留ㅽ듃由?뒪 cross-tab ?⑦꽩 ?꾩슜 ?뺤콉:
+   ???쇰꺼 而щ읆? muted 諛곌꼍?쇰줈 ?곗씠??而щ읆怨?援щ텇 (?뺣젹? 媛?대뜲 ?좎?).
+   ?쇰컲 list ?뚯씠釉??먯궛愿由?CCE ??怨쇰뒗 蹂몄쭏???ㅻⅨ ??醫낅쪟??蹂꾨룄 ???뺤콉 ?좎?. */
+.admin-trend-matrix-table tbody th,
+.design4-data-table tbody th {
+  font-weight: 700;
+  background: var(--surface-muted);
+}
+
+.admin-trend-matrix-table__corner,
+.admin-trend-matrix-table__stage-group,
+.admin-trend-matrix-table__stage-label {
+  background: var(--surface-soft);
+}
+
+.admin-trend-matrix-table__month {
+  min-width: 92px;
+}
+
+.admin-trend-matrix-table__detail-cell,
+.design4-data-table__detail-cell {
+  white-space: nowrap;
+}
+
+.admin-trend-value-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-trend-delta {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-trend-delta.is-up {
+  color: var(--status-danger);
+}
+
+.admin-trend-delta.is-down {
+  color: var(--status-success);
+}
+
+/* ---------- design4 shared tables ---------- */
+.design4-data-table {
+  table-layout: fixed;
+}
+
+.design4-data-table tbody tr:hover td {
+  background: var(--surface-muted);
+}
+
+.design4-data-table--org {
+  min-width: 1120px;
+}
+
+.design4-data-table--process {
+  min-width: 480px;
+}
+
+.design4-data-table--assets,
+.design4-data-table--vulns,
+.design4-data-table--modal {
+  min-width: 920px;
+}
+
+.design4-data-table__completion-cell {
+  min-width: 150px;
+}
+
+/* ?섏쐞 遺???꾪솴 ??? ?⑥쐞 ?대┃ 媛???쒖떆 */
+.design4-org-row {
+  cursor: default;
+}
+
+.design4-org-cell--name,
+.design4-org-cell--kpi {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.design4-org-cell--name {
+  font-weight: 600;
+  color: var(--mn-text-cce);
+}
+
+.design4-org-cell--name:hover {
+  background: color-mix(in srgb, var(--mn-text-cce) 8%, transparent);
+}
+
+.design4-org-cell--kpi:hover {
+  background: var(--surface-muted);
+  color: var(--mn-text-cce);
+}
+
+/* ?곸쐞 痍⑥빟??row ???꾩껜 row ?대┃ 媛??*/
+.design4-vuln-row {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.design4-vuln-row:hover td {
+  background: var(--surface-muted);
+}
+
+/* ---------- rate cards ---------- */
+.design4-rate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
+}
+
+.design4-rate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-muted);
+  min-width: 0;
+}
+
+.design4-rate-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.design4-rate-card__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.design4-rate-card__title-block strong {
+  font-size: 15px;
+}
+
+.design4-rate-card__title-block span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.design4-rate-card__chart,
+.design4-rate-card--chart {
+  min-height: 260px;
+}
+
+.design4-rate-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--mn-color);
+  padding: 10px 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  font-size: 12px;
+}
+
+.design4-rate-tooltip strong {
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.design4-rate-tooltip__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.design4-rate-tooltip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.design4-rate-tooltip__dot--security {
+  background: var(--brand-dashboard);
+}
+
+.design4-rate-tooltip__dot--fix {
+  background: var(--status-success);
+}
+
+/* ---------- unified rate chart ---------- */
+.design4-secondary-board--security {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.design4-secondary-board--process {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.design4-secondary-board--security > .design4-rate-unified {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.design4-rate-unified {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.design4-rate-unified__chart {
+  width: 100%;
+  min-height: 260px;
+  flex: 1 1 auto;
+}
+
+.design4-rate-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.design4-rate-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--mn-color);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+  min-width: 0;
+  text-align: left;
+}
+
+.design4-rate-toggle:hover {
+  background: var(--surface-muted);
+}
+
+.design4-rate-toggle__label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.design4-rate-toggle__value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.design4-rate-toggle.is-active {
+  border-color: var(--mn-text-cce);
+  border-width: 2px;
+  padding: 11px 13px;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.22);
+  background: var(--surface-base);
+}
+
+/* ---------- process status board ---------- */
+
+.design4-process-table-wrap {
+  width: 100%;
+}
+.design4-data-table--process tbody td {
+  background: var(--mn-color);
+}
+.design4-data-table--process {
+  background: var(--mn-color);
+}
+.design4-process-table__state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.design4-process-table__state > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.design4-process-table__state strong {
+  font-size: 14px;
+}
+.design4-process-table__state span:not(.design4-process-point) {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.design4-process-point {
+  width: 4px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.design4-process-point--danger {
+  background: var(--status-danger);
+}
+.design4-process-point--primary {
+  background: var(--brand-dashboard);
+}
+.design4-process-point--warning {
+  background: var(--status-warning);
+}
+.design4-process-point--success {
+  background: var(--status-success);
+}
+.design4-process-point--neutral {
+  background: var(--text-secondary);
+}
+.design4-process-point--pink {
+  background-color: var(--circle-point-red);
+}
+
+.design4-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--mn-color);
+}
+.design4-count-badge--danger {
+  color: var(--status-danger);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+.design4-count-badge--primary {
+  color: var(--brand-dashboard);
+  border-color: rgba(109, 89, 244, 0.35);
+}
+.design4-count-badge--warning {
+  color: var(--status-warning);
+  border-color: rgba(240, 183, 99, 0.45);
+}
+.design4-count-badge--pink {
+  color: var(--circle-point-red);
+  border-color: rgba(243, 146, 152, 0.45);
+}
+.design4-count-badge--success {
+  color: var(--status-success);
+  border-color: rgba(22, 163, 74, 0.35);
+}
+.design4-count-badge--neutral {
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.design4-process-table__percent {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.design4-process-table__percent--danger {
+  color: var(--status-danger);
+}
+.design4-process-table__percent--primary {
+  color: var(--brand-dashboard);
+}
+.design4-process-table__percent--warning {
+  color: var(--status-warning);
+}
+.design4-process-table__percent--pink {
+  color: var(--circle-point-red);
+}
+.design4-process-table__percent--success {
+  color: var(--status-success);
+}
+.design4-process-table__percent--neutral {
+  color: var(--text-secondary);
+}
+.design4-process-table__state,
+.design4-process-table__count,
+.design4-process-table__percent {
+  white-space: nowrap;
+}
+
+.design4-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- shared badges ---------- */
+.admin-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--surface-muted);
+  color: var(--text-color);
+}
+
+.admin-status-badge.running {
+  background: rgba(91, 111, 240, 0.12);
+  color: var(--status-running);
+}
+
+.admin-status-badge.success {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--status-success);
+}
+
+.admin-status-badge.pending {
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--status-pending);
+}
+
+.admin-status-badge.warning {
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--status-warning);
+}
+
+.admin-status-badge.danger {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--status-danger);
+}
+
+.admin-status-badge.default {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}

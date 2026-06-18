@@ -1,0 +1,76 @@
+.side-menu {
+  flex-shrink: 0;
+  width: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mn-color);
+  border-right: 1px solid var(--border);
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+
+.side-menu--collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+.side-menu__items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px;
+  overflow-y: auto;
+}
+
+.side-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.side-menu__item:hover {
+  background-color: var(--hover-color);
+}
+
+.side-menu__item--active {
+  background-color: var(--accent-info-bg);
+  color: var(--brand-cce);
+  font-weight: 700;
+}
+
+.side-menu__collapse-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.side-menu__collapse-btn:hover {
+  background-color: var(--hover-color);
+}
+
+@media (max-width: 768px) {
+  .side-menu {
+    display: none;
+  }
+}

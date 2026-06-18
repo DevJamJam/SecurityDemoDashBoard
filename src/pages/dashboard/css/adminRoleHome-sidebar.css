@@ -1,0 +1,768 @@
+/* =========================================================
+   AdminRoleHome — sidebar (좌측 카드 영역)
+     org tree (admin-org-tree4) /
+     alerts (admin-alert-panel) /
+     summary cards (admin-summary-cards) /
+     AlertPanel 인라인 expand (button.admin-alert-panel__summary-box) /
+     loading overlay
+   ========================================================= */
+
+/* ---------- org tree ---------- */
+.admin-org-tree4 {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-org-tree4-card {
+  border: 1px solid var(--mn-border);
+  border-radius: 12px;
+  background: var(--mn-color);
+  padding: 14px 14px 12px;
+  box-sizing: border-box;
+}
+
+.admin-panel__header--tree {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.admin-panel__header-text {
+  min-width: 0;
+}
+
+.admin-panel__eyebrow {
+  display: inline-block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(49, 64, 158, 0.72);
+}
+
+.admin-panel__header--tree h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.admin-panel__header--tree p,
+.admin-panel__header--tree span {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.admin-org-tree4__list,
+.admin-org-tree4__children {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-org-tree4__children {
+  position: relative;
+  margin-top: 0px;
+  margin-left: 10px;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.admin-org-tree4__children::before {
+  display: none;
+}
+
+.admin-org-tree4__item--child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -10px;
+  width: 1px;
+  height: 100%;
+  border-left: 1px dashed rgba(92, 106, 196, 0.62);
+}
+
+.admin-org-tree4__item--child:last-child::before {
+  height: 14px;
+}
+
+.admin-org-tree4__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  min-width: 0;
+}
+
+.admin-org-tree4__row {
+  position: relative;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 5px 1px 0;
+  border-radius: 8px;
+  transition: background-color 0.16s ease;
+}
+
+.admin-org-tree4__item--child > .admin-org-tree4__row::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  width: 8px;
+  border-top: 1px dashed rgba(92, 106, 196, 0.62);
+  transform: translateY(-50%);
+}
+
+.admin-org-tree4__row:hover {
+  background-color: rgba(92, 106, 196, 0.06);
+}
+
+.admin-org-tree4__row.selected,
+.admin-org-tree4__row.is-selected {
+  background-color: rgba(92, 106, 196, 0.1);
+  outline: 1px solid rgba(92, 106, 196, 0.18);
+}
+
+.admin-org-tree4__row.disabled {
+  opacity: 0.65;
+}
+
+.admin-org-tree4__row.is-muted {
+  opacity: 0.42;
+}
+
+.admin-org-tree4__row.is-muted:hover {
+  background-color: transparent;
+}
+
+.admin-org-tree4__row.is-muted .admin-org-tree4__label {
+  color: var(--text-secondary);
+}
+.admin-org-tree4__toggle {
+  width: 18px;
+  min-width: 18px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(49, 64, 158, 0.95);
+}
+
+.admin-org-tree4__toggle.empty,
+.admin-org-tree4__toggle--placeholder {
+  cursor: default;
+}
+
+.admin-org-tree4__toggle--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.admin-org-tree4__toggle-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.admin-org-tree4__dot {
+  width: 4px;
+  height: 4px;
+  display: inline-block;
+  border-radius: 50%;
+  background: rgba(92, 106, 196, 0.72);
+}
+
+.admin-org-tree4__label {
+  min-width: 0;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-color);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.admin-org-tree4__label:disabled {
+  cursor: not-allowed;
+}
+
+.admin-org-tree4__label-text {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.admin-org-tree4__empty {
+  padding: 14px 4px 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1280px) {
+  .admin-org-tree4-card {
+    padding: 12px 12px 10px;
+  }
+
+  .admin-panel__header--tree h3 {
+    font-size: 15px;
+  }
+
+  .admin-org-tree4__label {
+    font-size: 12px;
+  }
+}
+
+/* org tree 추가 (header-row, state, empty-state, content) */
+.admin-org-tree4__header-row {
+  margin-bottom: 12px;
+}
+
+.admin-org-tree4__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-org-tree-state,
+.admin-org-tree-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 260px;
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.admin-org-tree-state p,
+.admin-org-tree-empty-state p {
+  margin: 0;
+}
+
+.admin-org-tree-state--error {
+  color: var(--status-danger, #d64545);
+}
+
+.admin-org-tree-empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  font-size: 28px;
+}
+
+.admin-org-tree4__content {
+  position: relative;
+}
+
+.admin-org-tree4__content.is-blurred {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.admin-org-tree-state--overlay {
+  margin-top: 12px;
+  border-style: solid;
+  background: var(--surface-soft);
+}
+
+/* ---------- alerts ---------- */
+.admin-alert-panel--cards {
+  min-width: 0;
+}
+
+.admin-alert-panel__title-row {
+  margin-bottom: 12px;
+}
+
+.admin-alert-panel__summary,
+.admin-alert-panel__summary.compact-v2 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.admin-alert-panel__summary-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-muted);
+}
+
+.admin-alert-panel__summary-box span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.admin-alert-panel__summary-box strong {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.admin-alert-panel__summary-box.danger {
+  border-color: var(--circle-point-red);
+  background: transparent;
+}
+
+.admin-alert-panel__summary-box.warning {
+  border-color: var(--circle-point-orange);
+  background: transparent;
+}
+
+.admin-alert-panel__summary-box.info {
+  border-color: var(--circle-point-blue);
+  background: transparent;
+}
+
+.admin-alert-panel__summary-box.danger strong {
+  color: var(--status-danger);
+}
+
+.admin-alert-panel__summary-box.warning strong {
+  color: var(--status-warning);
+}
+
+.admin-alert-panel__summary-box.info strong {
+  color: var(--brand-cce);
+}
+
+.admin-alert-panel__stack,
+.admin-alert-panel__stack.compact-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reveal-list {
+  animation: dashboardReveal 0.18s ease;
+}
+
+@keyframes dashboardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-collapsible-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: transparent;
+  overflow: hidden;
+}
+
+.admin-collapsible-card--detail {
+  background: transparent;
+}
+
+.admin-collapsible-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface-muted);
+}
+
+.admin-collapsible-card__body--always-open {
+  padding-top: 14px;
+}
+
+.admin-collapsible-card__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-collapsible-card__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.admin-collapsible-card__title-block strong {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin-collapsible-card__body p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.admin-collapsible-card__meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.admin-collapsible-card.danger {
+  border-color: rgba(220, 38, 38, 0.24);
+  background-color: #f8c7d2;
+}
+
+.admin-collapsible-card.warning {
+  border-color: rgba(217, 119, 6, 0.24);
+}
+
+.admin-collapsible-card.info {
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* ---------- summary cards — 2026-05-28 Mini KPI Strip ----------
+   메인 상단에 가로 6칸 strip. 이전 디자인의 "면적 과대 → 메인 압박" 거절 사유를
+   해결: 카드 높이 70px, 배경 흰색 + 좌측 3px 컬러 strip 만으로 카테고리 강조.
+   숫자 좌측 / 라벨·세부 우측 인라인 배치로 한눈에 인지. */
+.admin-summary-cards,
+.admin-summary-cards.v2 {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-summary-card {
+  display: grid;
+  /* 2026-05-28 — sub 영역 폭 확보 (좌:우 1:1.1). 큰 숫자(32,708건 등)도 한 줄에
+     시원하게 들어가도록 균형 조정. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 70px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  /* 상단 컬러 라인 (좌측 strip 에서 변경 — 호버 공간 불일치 해소) */
+  border-top: 2px solid var(--divider-strong);
+  background: var(--mn-color);
+  text-align: left;
+  min-width: 0;
+}
+
+/* 카테고리별 상단 라인 색 */
+.admin-summary-card.assets { border-top-color: var(--brand-assets); }
+.admin-summary-card.inspection { border-top-color: var(--brand-cce); }
+.admin-summary-card.warning { border-top-color: var(--status-warning); }
+.admin-summary-card.danger { border-top-color: var(--status-danger); }
+.admin-summary-card.pending { border-top-color: var(--brand-dashboard); }
+.admin-summary-card.command { border-top-color: var(--brand-command); }
+
+.admin-summary-card.clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+.admin-summary-card.clickable:hover {
+  border-color: var(--text-color);
+  background: var(--table-hover);
+}
+
+/* 좌측: 라벨 (작게) + 큰 숫자 stack */
+.admin-summary-card__topline {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.admin-summary-card__label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-summary-card__hint {
+  display: none; /* Compact 패턴에서 별도 '상세' 라벨은 카드 hover 효과로 대체 */
+}
+
+.admin-summary-card__value {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip; /* '...' 대신 자연스러운 잘림 (실제로는 폭 충분히 줘서 안 잘림) */
+  min-width: 0;
+}
+
+/* 우측: sub items (한 줄에 한 데이터 — 라벨·값 가로 한 row).
+   2026-05-28 — 폰트 11px / 한 줄당 충분한 폭으로 큰 숫자도 잘림 없이 표시. */
+.admin-summary-card__sub {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* 2026-05-28 — sub list 정렬 보강.
+   각 li 안에서 라벨은 좌측 / 값은 우측으로 분리하여 카드 내 행끼리
+   라벨 컬럼·값 컬럼이 시각적으로 정렬되도록 (CCE/CVE/전체… 같은 라벨이
+   서로 다른 길이여도 N건 자리가 맞춰져 보임). */
+.admin-summary-card__sub--list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-summary-card__sub--list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.admin-summary-card__sub-label {
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: nowrap;
+}
+.admin-summary-card__sub-value {
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 2026-05-28 — Mini KPI Strip 패턴에서는 '상세' 라벨 노출 안 함.
+   카드 hover 효과(테두리/배경 변화) 자체로 클릭 가능성 표시. */
+.admin-summary-card__hint {
+  display: none;
+}
+
+/* =========================================================
+ * AlertPanel — 카드 클릭 시 인라인 expand (6번)
+ *
+ * 카드가 버튼 역할을 하도록 reset + is-active 상태 추가.
+ * 선택된 카드 아래로 해당 severity 알림 목록을 표시.
+ * ========================================================= */
+
+button.admin-alert-panel__summary-box {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease,
+    background-color 0.15s ease;
+}
+
+button.admin-alert-panel__summary-box:hover {
+  transform: translateY(-1px);
+  background: var(--button-text);
+}
+
+button.admin-alert-panel__summary-box.danger.is-active {
+  background: var(--accent-danger-bg);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.18);
+}
+button.admin-alert-panel__summary-box.warning.is-active {
+  background: var(--accent-warning-bg);
+  box-shadow: 0 0 0 2px rgba(240, 183, 99, 0.28);
+}
+button.admin-alert-panel__summary-box.info.is-active {
+  background: var(--point-cce);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.22);
+}
+
+.admin-alert-panel__detail {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--button-text);
+  max-height: 360px;
+  overflow-y: auto;
+  animation: dashboardReveal 0.18s ease;
+}
+
+.admin-alert-panel__list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 6px;
+}
+
+.admin-alert-panel__item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--button-text);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+.admin-alert-panel__item:hover {
+  border-color: var(--border);
+  background: var(--surface-muted);
+}
+.admin-alert-panel__item.is-expanded {
+  background: var(--accent-info-bg);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.admin-alert-panel__item-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-alert-panel__item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.admin-alert-panel__item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.admin-alert-panel__item-source {
+  font-weight: 600;
+  color: var(--brand-cce);
+}
+
+.admin-alert-panel__item-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.admin-alert-panel__item-message {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  color: var(--text-color);
+  background: var(--button-text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  line-height: 1.55;
+}
+
+.admin-alert-panel__state-loading,
+.admin-alert-panel__state-error,
+.admin-alert-panel__state-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+}
+
+.admin-alert-panel__state-error strong {
+  color: var(--status-danger);
+  font-size: 13px;
+}
+.admin-alert-panel__state-error p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+ * Loading Overlay
+ *   대시보드 데이터 재조회 시 (부서 전환 등) 기존 화면 위에
+ *   반투명 오버레이 + 스피너. 기존 데이터는 살짝 가려지고
+ *   사용자에게 명확한 로딩 피드백 제공.
+ * ========================================================= */
+
+.admin-role-home__loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  border-radius: 12px;
+  animation: dashboardReveal 0.14s ease;
+  pointer-events: all;
+}

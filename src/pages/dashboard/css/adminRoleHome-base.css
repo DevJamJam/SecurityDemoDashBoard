@@ -1,0 +1,585 @@
+/* =========================================================
+   AdminRoleHome — base
+     컨테이너 / status bar / page frame / generic cards / 헤더 헬퍼 /
+     content-grid / design4 grid 레이아웃 / 로딩/미배정 상태 / responsive
+     ※ orgTree / alertPanel / summaryCards 는 -sidebar.css
+     ※ design4 차트/테이블 = -design4.css
+     ※ 모달 = -modals.css
+     ※ search panel = -searchPanel.css
+   기준 화면: 2560x1440  하위 호환: 1920x1080  확장: 3840x2160
+   ========================================================= */
+
+.admin-role-home {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  color: var(--text-color);
+  background: transparent;
+  overflow: visible;
+}
+
+/* ---------- status bar ---------- */
+.admin-home-statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--mn-color);
+}
+
+.admin-home-statusbar.compact-v3 {
+  padding: 14px 18px;
+}
+
+.admin-home-statusbar__left,
+.admin-home-statusbar__title-wrap,
+.admin-home-statusbar__meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-home-statusbar__left {
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-home-statusbar__title-wrap {
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-home-statusbar__title-wrap strong {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.admin-home-statusbar__title-wrap span,
+.admin-home-statusbar__meta span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.admin-home-statusbar__meta {
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.admin-home-statusbar__meta strong {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.admin-home-statusbar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-home-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.admin-home-chip.dashboard {
+  background: var(--accent-info-bg);
+  color: var(--brand-dashboard);
+}
+
+.admin-home-chip.role {
+  background: var(--surface-soft);
+  color: var(--text-color);
+}
+
+.admin-home-chip.readonly {
+  background: var(--accent-warning-bg);
+  color: var(--status-warning);
+}
+
+.admin-home-chip.neutral {
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+}
+
+/* ---------- page frame ---------- */
+.admin-role-home__body,
+.admin-role-home__body--design4 {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  min-width: 0;
+  overflow: visible;
+  /* 하단 컨텐츠(상위 위험 자산/상위 취약점 등) 끝이 스크롤 경계에 딱 붙지 않도록 여유 */
+  padding-bottom: 25px;
+}
+
+.admin-role-home__sidebar,
+.admin-role-home__main,
+.admin-role-home__main--design4 {
+  min-width: 0;
+}
+
+.admin-role-home__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 좌측 조직도/알림은 데스크탑에서 고정, 내부 내용이 길면 좌측만 스크롤 */
+.admin-role-home__sidebar--design4 {
+  position: sticky;
+  top: 12px;
+  align-self: start;
+  max-height: calc(100vh - 130px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.admin-role-home__main,
+.admin-role-home__main--design4 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow: visible;
+}
+
+/* ---------- generic cards ---------- */
+.admin-side-card,
+.admin-content-card,
+.admin-right-rail__card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--mn-color);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.admin-side-card--tree,
+.admin-side-card--design4-tree {
+  padding: 14px;
+}
+
+.top-first {
+  margin-top: 0;
+}
+
+.design4-card {
+  min-width: 0;
+}
+
+.admin-panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.admin-panel__header.compact {
+  margin-bottom: 10px;
+}
+
+.admin-panel__header--row {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-panel__header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.admin-panel__header span,
+.admin-panel__header em {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: normal;
+}
+
+.admin-inline-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.admin-inline-link-btn--sm {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.admin-inline-link-btn:hover {
+  background: var(--surface-soft);
+}
+
+.admin-inline-link-btn--primary {
+  background: var(--point-color, var(--surface-soft));
+  color: var(--button-text);
+  border-color: transparent;
+}
+
+.admin-inline-link-btn--primary:hover {
+  filter: brightness(0.96);
+}
+
+/* ---------- common dashboard content (grid 레이아웃) ---------- */
+.admin-content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+.design4-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.design4-trend-grid,
+.design4-top-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+/* design4-trend-grid--41 — 4셀 평탄 구조.
+   넓은 화면: 2x2 (CCE|CVE / 보안|처리). 좁은 화면(@media): 1열 stack. */
+.design4-trend-grid--41 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "cce cve"
+    "security process";
+  gap: 16px;
+  min-width: 0;
+}
+/* trend-cell — children(차트/카드) 이 cell 너비/높이 모두 stretch.
+   기존 design4-trend-column 의 flex-column 스타일 동일 패턴. */
+.design4-trend-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.design4-trend-cell--cce {
+  grid-area: cce;
+}
+.design4-trend-cell--cve {
+  grid-area: cve;
+}
+.design4-trend-cell--security {
+  grid-area: security;
+}
+.design4-trend-cell--process {
+  grid-area: process;
+}
+
+.design4-trend-column,
+.design4-trend-column--41,
+.design4-layout-42__column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.design4-org-full-row {
+  min-width: 0;
+}
+
+.design4-layout-42 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+
+.design4-layout-42__top-row,
+.design4-layout-42__top-row--leaf {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+.design4-layout-42--leaf {
+  grid-template-columns: 1fr;
+}
+
+.design4-secondary-board,
+.design4-secondary-board--security,
+.design4-secondary-board--process,
+.design4-secondary-board--41,
+.trend-table-card {
+  min-width: 0;
+}
+
+/* ---------- responsive ---------- */
+@media (min-width: 2560px) {
+  .admin-role-home {
+    gap: 20px;
+  }
+
+  .admin-role-home__body,
+  .admin-role-home__body--design4 {
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .admin-summary-cards,
+  .admin-summary-cards.v2 {
+    gap: 16px;
+  }
+
+  /* 2026-05-29 — min-height:136px 제거. 2560 에서 카드 높이만 2배로 늘어
+     라벨↔숫자가 위아래로 벌어지고 가운데가 비어 깨져 보이던 문제.
+     base 70px(6칸 strip 의도) 유지 → 1920 과 동일한 컴팩트 밀도. */
+}
+
+/* 2560px 최적 기준: 2-col 레이아웃 유지 */
+/* 2200px 이하: 2-col 그리드 → 1-col 전환 (가로 스크롤 방지) */
+@media (max-width: 2200px) {
+  .design4-layout-42,
+  .design4-top-grid,
+  .design4-trend-grid,
+  .admin-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* trend-grid--41 은 grid-template-areas 도 같이 1열용으로 재정의해야
+     stack 순서가 CCE → CVE → 보안 → 처리 로 정렬됨 */
+  .design4-trend-grid--41 {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "cce"
+      "cve"
+      "security"
+      "process";
+  }
+
+  .design4-layout-42__top-row,
+  .design4-layout-42__top-row--leaf,
+  .design4-rate-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .design4-rate-toggle-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .design4-rate-toggle-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 1920px 호환: 사이드바 축소 + KPI 3열 */
+@media (max-width: 1920px) {
+  .admin-role-home__body,
+  .admin-role-home__body--design4 {
+    grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+  }
+
+  .admin-summary-cards,
+  .admin-summary-cards.v2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1440px) {
+  .admin-role-home__body,
+  .admin-role-home__body--design4 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-role-home__sidebar--design4 {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .admin-home-statusbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-home-statusbar__meta {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 1280px) {
+  .admin-summary-cards,
+  .admin-summary-cards.v2,
+  .admin-detail-modal__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-role-home {
+    gap: 12px;
+  }
+
+  .admin-home-statusbar {
+    padding: 12px 14px;
+  }
+
+  .admin-side-card,
+  .admin-content-card,
+  .admin-right-rail__card,
+  .admin-summary-card,
+  .design4-rate-card {
+    padding: 14px;
+  }
+
+  .admin-summary-cards,
+  .admin-summary-cards.v2,
+  .admin-alert-panel__summary,
+  .admin-alert-panel__summary.compact-v2,
+  .admin-detail-modal__summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-detail-modal,
+  .design4-issue-modal {
+    padding: 16px;
+  }
+
+  .admin-detail-modal__header,
+  .design4-issue-modal__header,
+  .admin-detail-modal__table-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-home-statusbar__title-wrap strong {
+    font-size: 22px;
+  }
+
+  .admin-home-statusbar__meta strong {
+    font-size: 18px;
+  }
+
+  .admin-detail-modal__table-head.summary,
+  .admin-detail-modal__table-row.summary,
+  .admin-detail-modal__table-head.asset,
+  .admin-detail-modal__table-row.asset,
+  .admin-detail-modal__table-head.design4-issues,
+  .admin-detail-modal__table-row.design4-issues {
+    grid-template-columns: 1fr;
+  }
+
+  .design4-issue-modal__backdrop,
+  .admin-detail-modal__backdrop {
+    padding: 12px;
+  }
+}
+
+/* ---------- 로딩/미배정 상태 ---------- */
+
+/* 로딩 스피너 래퍼 — 메인 컨테이너 중앙 정렬 */
+.admin-role-home__loading-wrap {
+  flex: 1;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+/* LoadingSpinner 컴포넌트의 기본 .loading-overlay 는 fixed 레이아웃이라
+   영역 내부에서 보이도록 배경/포지션 재지정 */
+.admin-role-home__loading-wrap .loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+/* 부서 미배정 사용자 — 컨테이너 자체는 블러 X (자식 텍스트에 상속되면 안 됨).
+   블러 효과는 absolute 배경 레이어(.admin-role-home__blur-bg)에만 적용하고,
+   안내(.admin-role-home__blur-notice)는 그 위에 선명하게 배치. */
+.admin-role-home__main--blurred {
+  position: relative;
+  min-height: 400px;
+  border-radius: 18px;
+  border: 1px dashed var(--border);
+  overflow: hidden;
+}
+
+.admin-role-home__blur-bg {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--surface-soft) 0px,
+    var(--surface-soft) 12px,
+    var(--mn-color) 12px,
+    var(--mn-color) 24px
+  );
+  filter: blur(4px);
+  opacity: 0.7;
+  z-index: 0;
+}
+
+.admin-role-home__blur-notice {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-color);
+  min-height: 400px;
+  padding: 24px;
+}
+
+.admin-role-home__blur-notice strong {
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.admin-role-home__blur-notice p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}

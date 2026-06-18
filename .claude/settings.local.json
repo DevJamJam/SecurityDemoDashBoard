@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd \"C:\\\\Users\\\\jangy\\\\OneDrive\\\\Desktop\\\\Yul\\\\SeDo\"; $job = Start-Job { cd \"C:\\\\Users\\\\jangy\\\\OneDrive\\\\Desktop\\\\Yul\\\\SeDo\"; npm run dev 2>&1 }; Start-Sleep -Seconds 5; Receive-Job $job; Stop-Job $job; Remove-Job $job)",
+      "Bash(xargs grep -l \"varo\\\\|VARO\")"
+    ]
+  }
+}
