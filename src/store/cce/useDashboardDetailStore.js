@@ -10,6 +10,9 @@ const useDashboardDetailStore = create((set, get) => ({
     info: initialSlot(),
   },
 
+  resetAlerts: () =>
+    set({ alerts: { urgent: initialSlot(), confirm: initialSlot(), info: initialSlot() } }),
+
   loadAlerts: async ({ deptId, severity }) => {
     set((s) => ({
       alerts: {

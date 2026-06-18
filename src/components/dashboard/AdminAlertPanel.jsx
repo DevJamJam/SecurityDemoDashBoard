@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { dateToString } from "@/config/data/common";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import useDashboardDetailStore from "@/store/cce/useDashboardDetailStore";
@@ -34,6 +34,12 @@ function AdminAlertPanel({ alerts, deptId }) {
   const [selected, setSelected] = useState(null);
   const alertSlots = useDashboardDetailStore((s) => s.alerts);
   const loadAlerts = useDashboardDetailStore((s) => s.loadAlerts);
+  const resetAlerts = useDashboardDetailStore((s) => s.resetAlerts);
+
+  useEffect(() => {
+    resetAlerts();
+    setSelected(null);
+  }, [deptId]);
 
   const counts = {
     urgent: alerts?.urgent ?? 0,

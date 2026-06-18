@@ -65,7 +65,7 @@ function App() {
   if (isLoading) return null;
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Router />
     </BrowserRouter>
   );
