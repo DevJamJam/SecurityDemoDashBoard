@@ -47,8 +47,8 @@ function buildDetailFromCode(code) {
     vulnerabilityFixRate: score_trend.current_fix_rate ?? 0,
     overallLabel: "보안율",
     actionLabel: "조치율",
-    scopeLabel: scope.selected_dept_id
-      ? `부서 ${scope.selected_dept_id} 기준`
+    scopeLabel: scope.selected_dept_name
+      ? `${scope.selected_dept_name} 기준`
       : "전사 기준",
     securityRateHistory: (score_trend.security_rate || []).map((item) => ({
       month: item.month,
@@ -145,10 +145,11 @@ function buildDetailFromCode(code) {
   const cceRows = buildTrendRows(operation_trend.cce);
   const cveRows = buildTrendRows(operation_trend.cve);
 
+  const deptName = scope.selected_dept_name || "전사";
   return {
     id: scope.selected_dept_id ? String(scope.selected_dept_id) : "root",
-    name: "전사",
-    breadcrumb: ["전사"],
+    name: deptName,
+    breadcrumb: [deptName],
     childDepartments: dept_summary.map((dept) => ({ id: String(dept.dept_id), name: dept.dept_name })),
     pendingActions: [],
     topRiskAssets: topRiskAssetRows,
@@ -158,6 +159,7 @@ function buildDetailFromCode(code) {
       role: scope.role,
       is_admin: scope.is_admin,
       selected_dept_id: scope.selected_dept_id,
+      selected_dept_name: scope.selected_dept_name,
       asset_count: scope.asset_count,
     },
     alerts: {

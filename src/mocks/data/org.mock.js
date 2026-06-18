@@ -1,7 +1,7 @@
 export const mockOrgTree = [
   {
     dept_id: "dept-001",
-    dept_name: "본부",
+    dept_name: "IT본부",
     dept_code: "HQ",
     dept_level: 1,
     dept_order: 1,

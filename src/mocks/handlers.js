@@ -1,7 +1,7 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockUser, DEMO_ACCOUNTS } from "./data/auth.mock";
 import { mockOrgTree } from "./data/org.mock";
-import { mockDashboard } from "./data/dashboard.mock";
+import { DEPT_DATASETS } from "./data/dashboard.mock";
 
 const MOCK_DELAY = 300;
 
@@ -88,7 +88,10 @@ export const handlers = [
   // ──────────────────── Dashboard ────────────────────
   http.post("/api/dashboard", async ({ request }) => {
     await delay(MOCK_DELAY * 1.5);
-    return ok(mockDashboard);
+    const body = await request.json().catch(() => ({}));
+    const deptId = body.dept_id ?? null;
+    const data = (deptId && DEPT_DATASETS[deptId]) ? DEPT_DATASETS[deptId] : DEPT_DATASETS["root"];
+    return ok(data);
   }),
 
   http.post("/api/dashboard/alerts", async ({ request }) => {
