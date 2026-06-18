@@ -1,76 +1,165 @@
-.side-menu {
+/* ── 메인 네비게이션 사이드바 ── */
+.sedo-nav {
   flex-shrink: 0;
-  width: var(--sidebar-width);
+  width: 200px;
   display: flex;
   flex-direction: column;
-  background-color: var(--mn-color);
+  background: var(--mn-color);
   border-right: 1px solid var(--border);
+  border-radius: 0 0 0 10px;
   transition: width 0.2s ease;
   overflow: hidden;
 }
 
-.side-menu--collapsed {
-  width: var(--sidebar-width-collapsed);
+.sedo-nav--collapsed {
+  width: 52px;
 }
 
-.side-menu__items {
+/* ── 네비게이션 목록 ── */
+.sedo-nav__list {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 12px 8px;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 
-.side-menu__item {
+.sedo-nav__section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 1단계 — 메인 항목 ── */
+.sedo-nav__item {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 9px 10px;
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--text-color);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background 0.15s, color 0.15s;
   white-space: nowrap;
+  min-height: 38px;
 }
 
-.side-menu__item:hover {
-  background-color: var(--hover-color);
+.sedo-nav__item:hover {
+  background: var(--hover-color);
+  color: var(--text-color);
 }
 
-.side-menu__item--active {
-  background-color: var(--accent-info-bg);
-  color: var(--brand-cce);
+.sedo-nav__item--active {
+  background: var(--accent-info-bg);
+  color: var(--brand-primary, #0891b2);
   font-weight: 700;
 }
 
-.side-menu__collapse-btn {
+.sedo-nav__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.sedo-nav__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sedo-nav__chevron {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+
+.sedo-nav__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* ── 2단계 — 서브 항목 ── */
+.sedo-nav__subs {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 6px 26px;
+}
+
+.sedo-nav__sub {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.sedo-nav__sub:hover {
+  background: var(--hover-color);
+  color: var(--text-color);
+}
+
+.sedo-nav__sub--active {
+  color: var(--brand-primary, #0891b2);
+  font-weight: 600;
+  background: transparent;
+}
+
+/* ── 하단 접기 버튼 ── */
+.sedo-nav__collapse-wrap {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 40px;
-  border: none;
+  padding: 8px 8px 10px;
   border-top: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 12px;
 }
 
-.side-menu__collapse-btn:hover {
-  background-color: var(--hover-color);
+.sedo-nav__collapse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 12px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--mn-color);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  min-width: 30px;
+}
+
+.sedo-nav__collapse:hover {
+  background: var(--accent-info-bg);
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
 }
 
 @media (max-width: 768px) {
-  .side-menu {
+  .sedo-nav {
     display: none;
   }
 }

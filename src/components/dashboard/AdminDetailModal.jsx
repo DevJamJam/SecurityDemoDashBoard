@@ -119,7 +119,9 @@ function ModalBodyRenderer({ data, onOpenNested, onAssetClick, onClose }) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         {data.rows.length === 0 ? (
-          <p style={{ textAlign: "center", color: "var(--text-secondary)", padding: "24px" }}>항목이 없습니다.</p>
+          <p style={{ textAlign: "center", color: "var(--text-secondary)", padding: "24px" }}>
+            {data.emptyMessage || "항목이 없습니다."}
+          </p>
         ) : (
           data.rows.map((row, i) => (
             <div

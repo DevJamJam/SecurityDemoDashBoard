@@ -2,30 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "../common/ThemeToggle";
 import PasswordChangeModal from "./PasswordChangeModal";
 import "./header.css";
-import { useMainTabStore } from "@/store/navigation/useMainTabStore";
-import { clientFeatures } from "@/config/clientFeatures";
-import { useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "@/store/auth/useAuthStore";
 import useLayoutStore from "@/store/common/useLayoutStore";
+import { useMainTabStore } from "@/store/navigation/useMainTabStore";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import {
-  IconFolderAdd,
-  IconShieldCheck,
-  IconGrid,
-  IconMessageReport,
-  IconSearchFound,
-  IconAssign,
-} from "@/assets/icons";
 
 export default function Header() {
-  const location = useLocation();
-  const isDashboard = location.pathname.startsWith("/sedo/dashboard");
-  const tab = useMainTabStore((state) => state.tab);
-  const setTab = useMainTabStore((state) => state.setTab);
-  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const logoutUser = useAuthStore((state) => state.logoutUser);
-  const isSideCollapsed = useLayoutStore((state) => state.isSideCollapsed);
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [pwModalOpen, setPwModalOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -41,177 +27,75 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  useEffect(() => {
-    if (location.pathname.startsWith("/sedo/vuln-mgmt")) {
-      setTab("vuln-mgmt");
-      return;
-    }
-    if (location.pathname.startsWith("/sedo/vuln-track")) {
-      setTab("vuln-track");
-      return;
-    }
-    if (
-      location.pathname.startsWith("/sedo/plan") ||
-      location.pathname.startsWith("/sedo/inspect") ||
-      location.pathname.startsWith("/sedo/target_assets")
-    ) {
-      setTab("cce");
-      return;
-    }
-    if (location.pathname.startsWith("/sedo/asset")) {
-      setTab("assets");
-      return;
-    }
-    if (location.pathname.startsWith("/sedo/cve")) {
-      setTab("cve");
-      return;
-    }
-    if (location.pathname.startsWith("/sedo/dashboard")) {
-      setTab("dashboard");
-    }
-  }, [location.pathname, setTab]);
-
-  const handleTabClick = (targetTab) => {
-    setTab(targetTab);
-    if (targetTab === "dashboard") {
-      navigate("/sedo/dashboard/dashboard-home");
-    } else if (targetTab === "cce") {
-      navigate("/sedo/plan/intro");
-    } else if (targetTab === "vuln-mgmt") {
-      navigate("/sedo/vuln-mgmt/plan-reg");
-    } else if (targetTab === "vuln-track") {
-      navigate("/sedo/vuln-track/plan");
-    } else if (targetTab === "assets") {
-      navigate("/sedo/asset/asset-list");
-    } else if (targetTab === "cve") {
-      navigate("/sedo/cve/inspection");
-    }
-  };
-
   const handleLogout = async () => {
     try {
-      const res = await logoutUser();
+      await logoutUser();
       useMainTabStore.getState().resetTab();
-      if (res?.data?.RESULT === "OK") {
-        navigate("/");
-      } else {
-        navigate("/");
-      }
+      navigate("/");
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "로그아웃 실패",
         text: error.message || "로그아웃 처리 중 오류가 발생했습니다.",
         confirmButtonText: "확인",
-        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue("--button-fail"),
+        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue("--button-bg"),
       });
     }
   };
 
+  const roleLabel = user?.role === 1 ? "관리자" : "부서장";
+
   return (
     <>
-      <header
-        className={`header-container ${isDashboard ? "is-dashboard" : ""} ${
-          isSideCollapsed ? "is-side-collapsed" : ""
-        }`}
-      >
-        <div className="header-left">
-          <div className="logo">
-            <img src={`${import.meta.env.BASE_URL}sedo-logo.svg`} alt="SeDo" />
-          </div>
+      <header className="sedo-header">
+        <div className="sedo-header__brand">
+          <img
+            src={`${import.meta.env.BASE_URL}sedo-logo.svg`}
+            alt="SeDo"
+            className="sedo-header__logo"
+          />
+          <span className="sedo-header__wordmark">SeDo</span>
+          <span className="sedo-header__badge">DEMO</span>
         </div>
-        <div className="header-center">
-          <div className="header-menu-group">
-            <button
-              className={`header-menu dashboard ${tab === "dashboard" ? "active" : ""}`}
-              onClick={() => handleTabClick("dashboard")}
-            >
-              <IconGrid className="header-menu__icon dashboard" />
-              DashBoard
-            </button>
-            {clientFeatures.enableAssets && (
-              <button
-                className={`header-menu assets ${tab === "assets" ? "active" : ""}`}
-                onClick={() => handleTabClick("assets")}
-              >
-                <IconFolderAdd className="header-menu__icon assets" />
-                자산관리
-              </button>
-            )}
-            {clientFeatures.enableCce && (
-              <button
-                className={`header-menu cce ${tab === "cce" ? "active" : ""}`}
-                onClick={() => handleTabClick("cce")}
-              >
-                <IconShieldCheck className="header-menu__icon cce" />
-                CCE 관리
-              </button>
-            )}
-            {clientFeatures.enableCve && (
-              <button
-                className={`header-menu cve ${tab === "cve" ? "active" : ""}`}
-                onClick={() => handleTabClick("cve")}
-              >
-                <IconMessageReport className="header-menu__icon cve" />
-                CVE 관리
-              </button>
-            )}
-            {clientFeatures.enableCce && (
-              <>
-                <button
-                  className={`header-menu vuln-mgmt ${tab === "vuln-mgmt" ? "active" : ""}`}
-                  onClick={() => handleTabClick("vuln-mgmt")}
-                >
-                  <IconSearchFound className="header-menu__icon vuln-mgmt" />
-                  취약점관리
-                </button>
-                {clientFeatures.enableVulnTrack && (
-                  <button
-                    className={`header-menu vuln-track ${tab === "vuln-track" ? "active" : ""}`}
-                    onClick={() => handleTabClick("vuln-track")}
-                  >
-                    <IconAssign className="header-menu__icon vuln-track" />
-                    취약점추적
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-        <div className="header-right">
+
+        <div className="sedo-header__actions">
           <ThemeToggle />
-          <div className="user-menu" ref={userMenuRef}>
+
+          <div className="sedo-header__user" ref={userMenuRef}>
             <button
               type="button"
-              className={`user-name ${menuOpen ? "is-open" : ""}`}
-              onClick={() => setMenuOpen((prev) => !prev)}
+              className={`sedo-header__user-btn ${menuOpen ? "is-open" : ""}`}
+              onClick={() => setMenuOpen((v) => !v)}
             >
-              {user?.name || "사용자"} 님
+              <span className="sedo-header__avatar">{(user?.name || "U")[0]}</span>
+              <span className="sedo-header__user-name">{user?.name || "사용자"}</span>
+              <span className="sedo-header__role-pill">{roleLabel}</span>
             </button>
+
             {menuOpen && (
-              <div className="user-menu__dropdown">
+              <div className="sedo-header__dropdown">
                 <button
                   type="button"
-                  className="user-menu__item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setPwModalOpen(true);
-                  }}
+                  className="sedo-header__dropdown-item"
+                  onClick={() => { setMenuOpen(false); setPwModalOpen(true); }}
                 >
                   비밀번호 변경
+                </button>
+                <div className="sedo-header__dropdown-divider" />
+                <button
+                  type="button"
+                  className="sedo-header__dropdown-item sedo-header__dropdown-item--danger"
+                  onClick={() => { setMenuOpen(false); handleLogout(); }}
+                >
+                  로그아웃
                 </button>
               </div>
             )}
           </div>
-          <button className="logout-button" onClick={handleLogout}>
-            로그아웃
-          </button>
         </div>
       </header>
-      <PasswordChangeModal
-        isOpen={pwModalOpen}
-        onClose={() => setPwModalOpen(false)}
-      />
+
+      <PasswordChangeModal isOpen={pwModalOpen} onClose={() => setPwModalOpen(false)} />
     </>
   );
 }

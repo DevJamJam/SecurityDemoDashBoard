@@ -10,7 +10,7 @@ import { getUncheckedCategoryLabel } from "@/config/data/dashboardPopupMeta";
 import AdminDetailModal from "@/components/dashboard/AdminDetailModal";
 import RealOrgTreePanel from "@/components/dashboard/RealOrgTreePanel";
 import Design4MainBoard from "@/components/dashboard/Design4MainBoard";
-import AdminSummaryCards from "@/components/dashboard/AdminSummaryCards";
+import ScopeMetricBar from "@/components/dashboard/ScopeMetricBar";
 import AdminAlertPanel from "@/components/dashboard/AdminAlertPanel";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import AssetPendingCommandsModal from "@/components/common/asset/AssetPendingCommandsModal";
@@ -60,11 +60,14 @@ const extractCode = (res) => {
   return data.CODE;
 };
 
-function ScopeStatus() {
+function ScopeStatus({ scopeName }) {
   return (
     <div className="admin-home-statusbar compact-v3">
-      <div className="admin-home-statusbar__meta compact-v3">
-        <strong>보안 운영 현황</strong>
+      <div className="admin-home-statusbar__left">
+        <div className="admin-home-statusbar__title-wrap">
+          <strong>보안 현황</strong>
+          {scopeName && <span>범위: {scopeName}</span>}
+        </div>
       </div>
       <TopMenuActions />
     </div>
@@ -193,6 +196,8 @@ function AdminRoleHome() {
       buildHighRiskSummaryModal(null, {
         scopeName,
         deptId: getDeptId(),
+        cceCount: displayDetail?.summary?.highRiskCce,
+        cveCount: displayDetail?.summary?.highRiskCve,
         onAssetNavigate: handleAssetNavigate,
       }),
     );
@@ -316,8 +321,10 @@ function AdminRoleHome() {
   const openTrendSummary = (trendRow, vulnType) => {
     openModal(buildTrendStepSummaryModal(trendRow, {
       vulnType, scopeName, deptId: getDeptId(),
-      onAssetNavigate: handleAssetNavigate,
-      onRedetectDrilldown: ({ stepKey, stepLabel, month }) => openTrendStepAssets({ vulnType, month, stepKey, stepLabel }),
+      onOpenStepAssets: ({ stepKey, stepLabel, month }) =>
+        openTrendStepAssets({ vulnType, month, stepKey, stepLabel }),
+      onRedetectDrilldown: ({ stepKey, stepLabel, month }) =>
+        openTrendStepAssets({ vulnType, month, stepKey: "redetect", stepLabel }),
     }));
   };
 
@@ -482,7 +489,7 @@ function AdminRoleHome() {
 
   return (
     <div className="admin-role-home">
-      <ScopeStatus />
+      <ScopeStatus scopeName={scopeName} />
 
       <div className="admin-role-home__body admin-role-home__body--design4">
         <aside className="admin-role-home__sidebar admin-role-home__sidebar--design4">
@@ -498,16 +505,12 @@ function AdminRoleHome() {
           error ? renderErrorState() : renderLoadingState()
         ) : (
           <section className="admin-role-home__main admin-role-home__main--design4">
-            <AdminSummaryCards
+            <ScopeMetricBar
               summary={displayDetail.summary}
-              readOnly={!isAdmin}
               onOpenSummaryModal={handleOpenSummaryModal}
             />
             <Design4MainBoard
               detail={displayDetail}
-              variant="4-1"
-              readOnly={!isAdmin}
-              onOpenSummaryModal={handleOpenSummaryModal}
               onOpenTrendSummary={openTrendSummary}
               onOpenAssetIssues={openAssetIssues}
               onOpenVulnDetail={openVulnDetail}

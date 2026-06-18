@@ -88,11 +88,6 @@ export default function RealOrgTreePanel() {
           <button type="button" className="admin-inline-link-btn admin-inline-link-btn--sm" onClick={() => fetchOrgTree({ force: true })}>
             새로고침
           </button>
-          {canAccessOrgManage && (
-            <button type="button" className="admin-inline-link-btn admin-inline-link-btn--sm" onClick={handleMoveToOrgSettings}>
-              조직 관리
-            </button>
-          )}
         </div>
       </div>
 

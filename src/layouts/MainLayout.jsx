@@ -1,15 +1,12 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/main/Header";
 import SideMenu from "../components/main/SideMenu";
-import TopMenu from "../components/main/TopMenu";
 import "./MainLayout.css";
 
 export default function MainLayout() {
   const location = useLocation();
-  const isDashboard = location.pathname.startsWith("/sedo/dashboard");
-  const isSettings = location.pathname.startsWith("/sedo/set");
 
-  const noMainScrollPaths = [
+  const noScrollPaths = [
     "/sedo/asset",
     "/sedo/cve/cve-status-detail",
     "/sedo/cve/assets-to-cve",
@@ -21,31 +18,25 @@ export default function MainLayout() {
     "/sedo/inspect/inspect_List_detail_list",
   ];
 
-  const shouldDisableMainScroll = noMainScrollPaths.some((path) =>
-    location.pathname.startsWith(path),
-  );
+  const isDashboard = location.pathname.startsWith("/sedo/dashboard");
+  const noScroll = noScrollPaths.some((p) => location.pathname.startsWith(p));
 
   return (
-    <div
-      className={`main-layout ${isDashboard ? "main-layout--dashboard" : ""} ${
-        isSettings ? "main-layout--settings" : ""
-      }`}
-    >
+    <div className="app-shell">
       <Header />
-      <div className="main-layout__body">
-        {!isDashboard && !isSettings && <SideMenu />}
-        <div className="main-layout__panel">
-          {!isDashboard && !isSettings && <TopMenu />}
-          <main
-            className={`main-layout__content ${
-              shouldDisableMainScroll ? "no-main-scroll" : ""
-            } ${isDashboard ? "dashboard-content" : ""} ${
-              isSettings ? "settings-content" : ""
-            }`}
-          >
-            <Outlet />
-          </main>
-        </div>
+      <div className="app-shell__body">
+        <SideMenu />
+        <main
+          className={[
+            "app-shell__content",
+            isDashboard ? "app-shell__content--dashboard" : "",
+            noScroll ? "app-shell__content--no-scroll" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <Outlet />
+        </main>
       </div>
     </div>
   );
