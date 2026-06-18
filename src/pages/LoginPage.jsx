@@ -20,7 +20,7 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-card__logo">
-          <img src="/sedo-logo.svg" alt="SeDo Logo" className="login-card__logo-img" />
+          <img src={`${import.meta.env.BASE_URL}sedo-logo.svg`} alt="SeDo Logo" className="login-card__logo-img" />
           <h1 className="login-card__title">SeDo</h1>
           <p className="login-card__subtitle">Security Demo Dashboard</p>
         </div>

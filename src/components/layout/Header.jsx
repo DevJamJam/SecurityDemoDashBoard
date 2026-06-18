@@ -12,7 +12,7 @@ export default function Header({ onMenuToggle }) {
 
       <div className="header__logo">
         <img
-          src="/sedo-logo.svg"
+          src={`${import.meta.env.BASE_URL}sedo-logo.svg`}
           alt="SeDo Logo"
           className="header__logo-img"
         />

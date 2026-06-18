@@ -117,7 +117,7 @@ export default function Header() {
       >
         <div className="header-left">
           <div className="logo">
-            <img src="/sedo-logo.svg" alt="SeDo" />
+            <img src={`${import.meta.env.BASE_URL}sedo-logo.svg`} alt="SeDo" />
           </div>
         </div>
         <div className="header-center">
