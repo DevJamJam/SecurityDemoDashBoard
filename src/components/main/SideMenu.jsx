@@ -10,6 +10,7 @@ import {
   IconSearchCVE,
   IconClipboard,
 } from "@/assets/icons";
+import { DASHBOARD_TREND_STEPS } from "@/config/data/adminHomeDrilldownMock";
 import "./sideMenu.css";
 
 const NAV_ITEMS = [
@@ -67,13 +68,7 @@ const NAV_ITEMS = [
     Icon: IconClipboard,
     rootPath: "/sedo/vuln-mgmt",
     defaultPath: "/sedo/vuln-mgmt/plan-reg",
-    subs: [
-      { label: "계획등록",   path: "/sedo/vuln-mgmt/plan-reg" },
-      { label: "계획 검토", path: "/sedo/vuln-mgmt/plan-approval" },
-      { label: "결과등록",   path: "/sedo/vuln-mgmt/result-reg" },
-      { label: "결과검토",   path: "/sedo/vuln-mgmt/result-approval" },
-      { label: "완료목록",   path: "/sedo/vuln-mgmt/result-fix" },
-    ],
+    subs: DASHBOARD_TREND_STEPS.map(({ label, path }) => ({ label, path })),
   },
 ];
 

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import sedoApi from "@/lib/sedoApi";
 
 const initialSlot = () => ({ data: null, loading: false, error: null });
@@ -100,12 +100,12 @@ const useDashboardDetailStore = create((set, get) => ({
     throw new Error("운영 추이 자산 조회 실패");
   },
 
-  loadRemediationHistory: async ({ vulnType, astUuid, cccIndex, assUuid, cveId }) => {
+  loadRemediationHistory: async ({ vulnType, assetCceUuid, cccIndex, assetUuid, cveId }) => {
     const res = await sedoApi.post("/dashboard/remediation-history", {
       vuln_type: vulnType,
-      ast_uuid: astUuid,
+      asset_cce_uuid: assetCceUuid,
       ccc_index: cccIndex,
-      ass_uuid: assUuid,
+      asset_uuid: assetUuid,
       cve_id: cveId,
     });
     if (res.data?.RESULT === "OK") return res.data.CODE;

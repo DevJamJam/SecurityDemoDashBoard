@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "@/store/auth/useAuthStore";
 import useOrgStore from "@/store/org/useOrgStore";
@@ -38,6 +38,7 @@ import {
   hasAssignedDept,
 } from "@/utils/orgPermissionUtils";
 import {
+  getDashboardHighRiskSummary,
   getDashboardPendingSummary,
   getDashboardPendingAssets,
   getDashboardCommandFailureAssets,
@@ -45,6 +46,10 @@ import {
   getDashboardActiveCveScans,
   getDashboardUncheckedSummary,
   getDashboardUncheckedAssets,
+  getDashboardManagedAssets,
+  getDashboardAssetIssues,
+  getDashboardVulnerabilityDetail,
+  getDashboardTicketsByStatus,
 } from "@/api/cce/dashboardPopups";
 import "./css/adminRoleHome-base.css";
 import "./css/adminRoleHome-sidebar.css";
@@ -66,7 +71,7 @@ function ScopeStatus({ scopeName }) {
       <div className="admin-home-statusbar__left">
         <div className="admin-home-statusbar__title-wrap">
           <strong>보안 현황</strong>
-          {scopeName && <span>범위: {scopeName}</span>}
+          {scopeName && <span>踰붿쐞: {scopeName}</span>}
         </div>
       </div>
       <TopMenuActions />
@@ -147,7 +152,7 @@ function AdminRoleHome() {
         replaceTopModal({
           ...loadingMeta,
           loading: false,
-          error: err?.message || "데이터 조회에 실패했습니다.",
+          error: err?.message || "?곗씠??議고쉶???ㅽ뙣?덉뒿?덈떎.",
         });
       }
     },
@@ -192,14 +197,20 @@ function AdminRoleHome() {
   };
 
   const openHighRiskSummary = () => {
-    openModal(
-      buildHighRiskSummaryModal(null, {
-        scopeName,
-        deptId: getDeptId(),
-        cceCount: displayDetail?.summary?.highRiskCce,
-        cveCount: displayDetail?.summary?.highRiskCve,
-        onAssetNavigate: handleAssetNavigate,
-      }),
+    openWithLoading(
+      { type: "summaryRows", eyebrow: "KPI 상세", title: "고위험 취약점 상세" },
+      async () => {
+        const res = await getDashboardHighRiskSummary(getDeptId());
+        const code = extractCode(res);
+        return buildHighRiskSummaryModal(code, {
+          scopeName,
+          deptId: getDeptId(),
+          cceCount: displayDetail?.summary?.highRiskCce,
+          cveCount: displayDetail?.summary?.highRiskCve,
+          onAssetNavigate: handleAssetNavigate,
+          onOpenVulnDetail: (item) => openVulnDetailForContext(item, getDeptId(), scopeName),
+        });
+      },
     );
   };
 
@@ -234,7 +245,7 @@ function AdminRoleHome() {
   };
 
   const openCommandAssetPending = (asset) => {
-    setCommandModalAsset({ ass_uuid: asset.ass_uuid, ast_hostname: asset.ast_hostname, ast_ipaddr: asset.ast_ipaddr });
+    setCommandModalAsset({ asset_uuid: asset.asset_uuid, ast_hostname: asset.ast_hostname, ast_ipaddr: asset.ast_ipaddr });
   };
 
   const openCommandFailures = () => {
@@ -310,8 +321,8 @@ function AdminRoleHome() {
       async () => {
         const code = await dashDetail.loadRemediationHistory(
           vulnType === "CCE"
-            ? { vulnType, astUuid: asset?.ast_uuid, cccIndex: vulnId }
-            : { vulnType, assUuid: asset?.ass_uuid, cveId: vulnId },
+            ? { vulnType, assetCceUuid: asset?.asset_cce_uuid, cccIndex: vulnId }
+            : { vulnType, assetUuid: asset?.asset_uuid, cveId: vulnId },
         );
         return buildRemediationHistoryModal(code, { asset, vulnType, vulnId });
       },
@@ -329,31 +340,77 @@ function AdminRoleHome() {
   };
 
   const openAssetIssues = (asset) => {
-    openModal(buildAssetIssuesTabs(null, { asset, scopeName }));
+    openWithLoading(
+      { type: "tabs", eyebrow: "자산 이슈", title: asset?.name || asset?.ast_hostname || "자산 이슈" },
+      async () => {
+        const res = await getDashboardAssetIssues({ assetUuid: asset?.asset_uuid, type: "all" });
+        const code = extractCode(res);
+        return buildAssetIssuesTabs(code, { asset, scopeName });
+      },
+    );
+  };
+
+  const openVulnDetailForContext = (item, deptId, targetScopeName) => {
+    if (!item?.vulnId || !item?.category) return;
+    openWithLoading(
+      { type: "assetList", eyebrow: `${item.category} 취약점 상세`, title: `${item.vulnId} - ${item.name || ""}` },
+      async () => {
+        const res = await getDashboardVulnerabilityDetail({
+          type: item.category,
+          vulnId: item.vulnId,
+          deptId,
+        });
+        const code = extractCode(res);
+        return buildVulnDetailModal(code, {
+          type: item.category,
+          vulnId: item.vulnId,
+          vulnLabel: item.name,
+          deptId,
+          scopeName: targetScopeName,
+          onAssetNavigate: handleAssetNavigate,
+        });
+      },
+    );
   };
 
   const openVulnDetail = (item) => {
-    if (!item?.vulnId || !item?.category) return;
-    openModal(buildVulnDetailModal({ type: item.category, vulnId: item.vulnId, vulnLabel: item.name, deptId: getDeptId(), scopeName, onAssetNavigate: handleAssetNavigate }));
+    openVulnDetailForContext(item, getDeptId(), scopeName);
   };
 
   const openProcessStatusTickets = (statusRow) => {
-    openModal(buildTicketsByStatusModal({
-      deptId: getDeptId(),
-      status: statusRow.key,
-      statusLabel: statusRow.label,
-      scopeName,
-      onAssetDetail: (ticket) => { navigate(`/sedo/asset/asset-list/asset-detail/${ticket.ass_uuid}`, { state: { ast_uuid: ticket.ast_uuid, fromDashboard: true } }); closeModal(); },
-      onAssetNavigate: (ticket) => {
-        const ymd = toYmd(ticket.created_at);
-        const vulnFilter = { start_date: ymd, end_date: ymd, ...(ticket.vuln_type === "CCE" ? { ccc_item_no: ticket.vuln_id } : { cve_id: ticket.vuln_id }) };
-        handleAssetNavigate({ ass_uuid: ticket.ass_uuid, ast_uuid: ticket.ast_uuid, ast_hostname: ticket.ast_hostname, ast_ipaddr: ticket.ast_ipaddr }, ticket.vuln_type, ticket.current_step, vulnFilter);
+    openWithLoading(
+      { type: "assetList", eyebrow: "처리상태", title: `${statusRow.label} 티켓 목록` },
+      async () => {
+        const res = await getDashboardTicketsByStatus({
+          deptId: getDeptId(),
+          status: statusRow.key,
+        });
+        const code = extractCode(res);
+        return buildTicketsByStatusModal(code, {
+          deptId: getDeptId(),
+          status: statusRow.key,
+          statusLabel: statusRow.label,
+          scopeName,
+          onAssetDetail: (ticket) => { navigate(`/sedo/asset/asset-list/asset-detail/${ticket.asset_uuid}`, { state: { asset_cce_uuid: ticket.asset_cce_uuid, fromDashboard: true } }); closeModal(); },
+          onAssetNavigate: (ticket) => {
+            const ymd = toYmd(ticket.created_at);
+            const vulnFilter = { start_date: ymd, end_date: ymd, ...(ticket.vuln_type === "CCE" ? { ccc_item_no: ticket.vuln_id } : { cve_id: ticket.vuln_id }) };
+            handleAssetNavigate({ asset_uuid: ticket.asset_uuid, asset_cce_uuid: ticket.asset_cce_uuid, ast_hostname: ticket.ast_hostname, ast_ipaddr: ticket.ast_ipaddr }, ticket.vuln_type, ticket.current_step, vulnFilter);
+          },
+        });
       },
-    }));
+    );
   };
 
   const openManagedAssets = () => {
-    openModal(buildManagedAssetsModal({ deptId: getDeptId(), scopeName }));
+    openWithLoading(
+      { type: "assetList", eyebrow: "KPI 상세", title: `관리 자산 - ${scopeName}` },
+      async () => {
+        const res = await getDashboardManagedAssets(getDeptId());
+        const code = extractCode(res);
+        return buildManagedAssetsModal(code, { deptId: getDeptId(), scopeName });
+      },
+    );
   };
 
   const openDeptPendingAssets = (payload, deptCtx) => {
@@ -379,7 +436,19 @@ function AdminRoleHome() {
   };
 
   const openDeptHighRiskSummary = (deptCtx) => {
-    openModal(buildHighRiskSummaryModal(null, { scopeName: deptCtx.scopeName, deptId: deptCtx.deptId, onAssetNavigate: handleAssetNavigate }));
+    openWithLoading(
+      { type: "summaryRows", eyebrow: `부서 · ${deptCtx.scopeName}`, title: "고위험 취약점 상세" },
+      async () => {
+        const res = await getDashboardHighRiskSummary(deptCtx.deptId);
+        const code = extractCode(res);
+        return buildHighRiskSummaryModal(code, {
+          scopeName: deptCtx.scopeName,
+          deptId: deptCtx.deptId,
+          onAssetNavigate: handleAssetNavigate,
+          onOpenVulnDetail: (item) => openVulnDetailForContext(item, deptCtx.deptId, deptCtx.scopeName),
+        });
+      },
+    );
   };
 
   const openDeptPendingSummary = (deptCtx) => {
@@ -432,7 +501,14 @@ function AdminRoleHome() {
   };
 
   const openDeptManagedAssets = (deptCtx) => {
-    openModal(buildManagedAssetsModal({ deptId: deptCtx.deptId, scopeName: deptCtx.scopeName }));
+    openWithLoading(
+      { type: "assetList", eyebrow: `부서 · ${deptCtx.scopeName}`, title: `관리 자산 - ${deptCtx.scopeName}` },
+      async () => {
+        const res = await getDashboardManagedAssets(deptCtx.deptId);
+        const code = extractCode(res);
+        return buildManagedAssetsModal(code, { deptId: deptCtx.deptId, scopeName: deptCtx.scopeName });
+      },
+    );
   };
 
   const handleDeptKpiClick = (row, kpiKey) => {
@@ -470,7 +546,7 @@ function AdminRoleHome() {
     <section className="admin-role-home__main admin-role-home__main--design4">
       <div className="admin-content-card">
         <div className="admin-panel__header">
-          <h3>데이터 로드 실패</h3>
+          <h3>?곗씠??濡쒕뱶 ?ㅽ뙣</h3>
           <span>{error}</span>
         </div>
       </div>

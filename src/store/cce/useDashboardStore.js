@@ -1,5 +1,14 @@
 import { create } from "zustand";
 import { getOrgDashboard } from "@/api/cce/dashboard";
+import { getStepLabel } from "@/config/data/adminHomeDrilldownMock";
+
+const TREND_STEP_METRICS = [
+  ["planReg", "plan_registered"],
+  ["planApproval", "plan_approved"],
+  ["resultReg", "result_registered"],
+  ["resultApproval", "result_approved"],
+  ["resultFix", "resolved_count"],
+];
 
 function buildDetailFromCode(code) {
   const {
@@ -45,11 +54,9 @@ function buildDetailFromCode(code) {
   const securitySummary = {
     overallSecurityRate: score_trend.current_security_rate ?? 0,
     vulnerabilityFixRate: score_trend.current_fix_rate ?? 0,
-    overallLabel: "보안율",
+    overallLabel: "보안률",
     actionLabel: "조치율",
-    scopeLabel: scope.selected_dept_name
-      ? `${scope.selected_dept_name} 기준`
-      : "전사 기준",
+    scopeLabel: scope.selected_dept_name ? `${scope.selected_dept_name} 기준` : "전사 기준",
     securityRateHistory: (score_trend.security_rate || []).map((item) => ({
       month: item.month,
       value: item.value,
@@ -65,14 +72,14 @@ function buildDetailFromCode(code) {
       key: "unresolved",
       label: "미해결",
       count: ticket_status.unresolved?.count ?? 0,
-      helper: "미처리·진행중·재오픈 모두 포함된 총 건수",
+      helper: "미처리, 진행중, 재오픈 항목을 포함한 총 건수",
       percent: ticket_status.unresolved?.percent ?? 0,
     },
     {
       key: "pending_approval",
       label: "승인대기",
       count: ticket_status.pending_approval?.count ?? 0,
-      helper: "결재가 필요한 항목",
+      helper: "검토나 결재가 필요한 항목",
       percent: ticket_status.pending_approval?.percent ?? 0,
     },
     {
@@ -86,14 +93,14 @@ function buildDetailFromCode(code) {
       key: "overdue",
       label: "기한 초과",
       count: ticket_status.overdue?.count ?? 0,
-      helper: "마감이 지난 항목",
+      helper: "마감일이 지난 항목",
       percent: ticket_status.overdue?.percent ?? 0,
     },
   ];
 
   const topRiskAssetRows = top_risk_assets.map((asset, index) => ({
     id: `risk-asset-${index}`,
-    ass_uuid: asset.ass_uuid,
+    asset_uuid: asset.asset_uuid,
     name: asset.ast_hostname,
     ip: asset.ast_ipaddr,
     risk: asset.risk_level,
@@ -133,19 +140,18 @@ function buildDetailFromCode(code) {
       foundCount: item.found_count ?? 0,
       remainingCount: item.remaining_count ?? 0,
       redetectCount: item.redetect_count ?? 0,
-      stepSummary: [
-        { stepKey: "planReg", label: "조치계획등록", count: item.plan_registered ?? 0, modalData: null },
-        { stepKey: "planApproval", label: "조치계획승인", count: item.plan_approved ?? 0, modalData: null },
-        { stepKey: "resultReg", label: "조치결과등록", count: item.result_registered ?? 0, modalData: null },
-        { stepKey: "resultApproval", label: "조치결과승인", count: item.result_approved ?? 0, modalData: null },
-        { stepKey: "resultFix", label: "조치완료", count: item.resolved_count ?? 0, modalData: null },
-      ],
+      stepSummary: TREND_STEP_METRICS.map(([stepKey, metricKey]) => ({
+        stepKey,
+        label: getStepLabel(stepKey),
+        count: item[metricKey] ?? 0,
+        modalData: null,
+      })),
     }));
 
   const cceRows = buildTrendRows(operation_trend.cce);
   const cveRows = buildTrendRows(operation_trend.cve);
-
   const deptName = scope.selected_dept_name || "전사";
+
   return {
     id: scope.selected_dept_id ? String(scope.selected_dept_id) : "root",
     name: deptName,

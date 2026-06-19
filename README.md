@@ -17,7 +17,14 @@
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
+```
+
+PowerShell에서 `npm.ps1` 실행 정책 오류가 나면 아래처럼 실행하세요.
+
+```bash
+npm.cmd install
+npm.cmd run dev
 ```
 
 **데모 계정 (아래 계정만 로그인 가능)**

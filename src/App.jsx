@@ -11,7 +11,7 @@ function App() {
   const isSessionExpired = useAuthStore((state) => state.isSessionExpired);
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const intervalRef = useRef(null);
-  const { setBookmarks, initBookmarks } = useBookmarkStore();
+  const { loadBookmarksFromUserData, initBookmarks } = useBookmarkStore();
 
   useEffect(() => {
     let mounted = true;
@@ -56,7 +56,7 @@ function App() {
   useEffect(() => {
     const saved = sessionStorage.getItem("bookmarks");
     if (saved) {
-      try { setBookmarks(JSON.parse(saved)); } catch { initBookmarks(); }
+      try { loadBookmarksFromUserData(JSON.parse(saved)); } catch { initBookmarks(); }
     } else {
       initBookmarks();
     }
