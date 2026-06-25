@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/main/Header";
 import SideMenu from "../components/main/SideMenu";
+import Breadcrumb from "../components/main/Breadcrumb";
 import "./MainLayout.css";
 
 export default function MainLayout() {
@@ -35,6 +36,7 @@ export default function MainLayout() {
             .filter(Boolean)
             .join(" ")}
         >
+          {!isDashboard && <Breadcrumb />}
           <Outlet />
         </main>
       </div>

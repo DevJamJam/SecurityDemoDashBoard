@@ -1,0 +1,25 @@
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--overlay-loading);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-overlay .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: var(--mn-text-cce);
+  border-radius: 50%;
+  animation: lo-spin 1s linear infinite;
+}
+
+@keyframes lo-spin {
+  to { transform: rotate(360deg); }
+}

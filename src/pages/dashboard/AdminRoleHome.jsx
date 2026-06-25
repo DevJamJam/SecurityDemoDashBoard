@@ -10,7 +10,6 @@ import { getUncheckedCategoryLabel } from "@/config/data/dashboardPopupMeta";
 import AdminDetailModal from "@/components/dashboard/AdminDetailModal";
 import RealOrgTreePanel from "@/components/dashboard/RealOrgTreePanel";
 import Design4MainBoard from "@/components/dashboard/Design4MainBoard";
-import ScopeMetricBar from "@/components/dashboard/ScopeMetricBar";
 import AdminAlertPanel from "@/components/dashboard/AdminAlertPanel";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import AssetPendingCommandsModal from "@/components/common/asset/AssetPendingCommandsModal";
@@ -65,15 +64,42 @@ const extractCode = (res) => {
   return data.CODE;
 };
 
-function ScopeStatus({ scopeName }) {
+function ScopeStatus({ scopeName, summary, onOpenSummaryModal }) {
+  const chips = summary
+    ? [
+        { key: "assets",   label: "점검 범위", value: `${summary.assetCount}대`,         tone: "neutral" },
+        { key: "highRisk", label: "위험 탐지", value: `${summary.highRiskCount}건`,       tone: "danger"  },
+        { key: "pending",  label: "미처리",    value: `${summary.approvePendingCount}건`,  tone: "warning" },
+        { key: "command",  label: "명령 오류", value: `${summary.commandFailCount}건`,     tone: "command" },
+      ]
+    : [];
+
   return (
     <div className="admin-home-statusbar compact-v3">
       <div className="admin-home-statusbar__left">
         <div className="admin-home-statusbar__title-wrap">
           <strong>보안 현황</strong>
-          {scopeName && <span>踰붿쐞: {scopeName}</span>}
+          <span>
+            {scopeName && `범위: ${scopeName}`}
+            {summary && ` · 보안점수 ${summary.securityScore}점`}
+          </span>
         </div>
       </div>
+      {chips.length > 0 && (
+        <div className="admin-home-statusbar__chips">
+          {chips.map((chip) => (
+            <button
+              key={chip.key}
+              type="button"
+              className={`scope-chip scope-chip--${chip.tone}`}
+              onClick={() => onOpenSummaryModal?.(chip.key)}
+            >
+              <span className="scope-chip__label">{chip.label}</span>
+              <strong className="scope-chip__value">{chip.value}</strong>
+            </button>
+          ))}
+        </div>
+      )}
       <TopMenuActions />
     </div>
   );
@@ -152,7 +178,7 @@ function AdminRoleHome() {
         replaceTopModal({
           ...loadingMeta,
           loading: false,
-          error: err?.message || "?곗씠??議고쉶???ㅽ뙣?덉뒿?덈떎.",
+          error: err?.message || "데이터 조회에 실패했습니다.",
         });
       }
     },
@@ -546,7 +572,7 @@ function AdminRoleHome() {
     <section className="admin-role-home__main admin-role-home__main--design4">
       <div className="admin-content-card">
         <div className="admin-panel__header">
-          <h3>?곗씠??濡쒕뱶 ?ㅽ뙣</h3>
+          <h3>데이터 로딩 실패</h3>
           <span>{error}</span>
         </div>
       </div>
@@ -565,14 +591,20 @@ function AdminRoleHome() {
 
   return (
     <div className="admin-role-home">
-      <ScopeStatus scopeName={scopeName} />
+      <ScopeStatus
+        scopeName={scopeName}
+        summary={displayDetail?.summary}
+        onOpenSummaryModal={handleOpenSummaryModal}
+      />
 
       <div className="admin-role-home__body admin-role-home__body--design4">
         <aside className="admin-role-home__sidebar admin-role-home__sidebar--design4">
-          <div className="admin-side-card admin-side-card--tree top-first admin-side-card--design4-tree">
-            <RealOrgTreePanel />
+          <div className="admin-role-home__sidebar-inner">
+            <div className="admin-side-card admin-side-card--tree top-first admin-side-card--design4-tree">
+              <RealOrgTreePanel />
+            </div>
+            <AdminAlertPanel alerts={displayDetail?.alerts} deptId={selectedDeptId ?? ""} />
           </div>
-          <AdminAlertPanel alerts={displayDetail?.alerts} deptId={selectedDeptId ?? ""} />
         </aside>
 
         {!canViewDashboard ? (
@@ -581,10 +613,6 @@ function AdminRoleHome() {
           error ? renderErrorState() : renderLoadingState()
         ) : (
           <section className="admin-role-home__main admin-role-home__main--design4">
-            <ScopeMetricBar
-              summary={displayDetail.summary}
-              onOpenSummaryModal={handleOpenSummaryModal}
-            />
             <Design4MainBoard
               detail={displayDetail}
               onOpenTrendSummary={openTrendSummary}

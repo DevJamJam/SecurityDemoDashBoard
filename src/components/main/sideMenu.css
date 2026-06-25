@@ -1,18 +1,11 @@
-/* ── 메인 네비게이션 사이드바 ── */
+/* ── 사이드바 (고정 72px) ── */
 .sedo-nav {
   flex-shrink: 0;
-  width: 200px;
+  width: 72px;
   display: flex;
   flex-direction: column;
   background: var(--mn-color);
   border-right: 1px solid var(--border);
-  border-radius: 0 0 0 10px;
-  transition: width 0.2s ease;
-  overflow: hidden;
-}
-
-.sedo-nav--collapsed {
-  width: 52px;
 }
 
 /* ── 네비게이션 목록 ── */
@@ -20,91 +13,100 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 12px 8px;
+  gap: 4px;
+  padding: 12px 6px;
   overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
+  overflow-x: visible;
+  scrollbar-width: none;
+}
+
+.sedo-nav__list::-webkit-scrollbar {
+  display: none;
 }
 
 .sedo-nav__section {
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
-/* ── 1단계 — 메인 항목 ── */
-.sedo-nav__item {
+/* ── 아이콘 버튼 (아이콘 + 텍스트 레이블) ── */
+.sedo-nav__icon-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 5px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 10px 4px 8px;
   border: none;
   border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  text-align: left;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-  min-height: 38px;
 }
 
-.sedo-nav__item:hover {
+.sedo-nav__icon-btn:hover {
   background: var(--hover-color);
   color: var(--text-color);
 }
 
-.sedo-nav__item--active {
+.sedo-nav__icon-btn--active {
   background: var(--accent-info-bg);
   color: var(--brand-primary, #0891b2);
-  font-weight: 700;
 }
 
 .sedo-nav__icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
-.sedo-nav__label {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.sedo-nav__icon-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  width: 60px;
+  display: block;
 }
 
-.sedo-nav__chevron {
-  flex-shrink: 0;
-  width: 13px;
-  height: 13px;
-  transition: transform 0.2s;
-  color: var(--text-muted);
-}
-
-.sedo-nav__chevron--open {
-  transform: rotate(180deg);
-}
-
-/* ── 2단계 — 서브 항목 ── */
-.sedo-nav__subs {
+/* ── 플라이아웃 메뉴 ── */
+.sedo-nav__flyout {
+  position: fixed;
+  z-index: 200;
+  min-width: 160px;
+  background: var(--mn-color);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 2px 0 6px 26px;
 }
 
-.sedo-nav__sub {
+.sedo-nav__flyout-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 4px 8px 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.sedo-nav__flyout-item {
   display: block;
   width: 100%;
-  padding: 7px 10px;
+  padding: 8px 10px;
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 400;
   text-align: left;
   cursor: pointer;
@@ -112,50 +114,15 @@
   white-space: nowrap;
 }
 
-.sedo-nav__sub:hover {
+.sedo-nav__flyout-item:hover {
   background: var(--hover-color);
   color: var(--text-color);
 }
 
-.sedo-nav__sub--active {
+.sedo-nav__flyout-item--active {
   color: var(--brand-primary, #0891b2);
   font-weight: 600;
-  background: transparent;
-}
-
-/* ── 하단 접기 버튼 ── */
-.sedo-nav__collapse-wrap {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 8px 10px;
-  border-top: 1px solid var(--border);
-}
-
-.sedo-nav__collapse {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 0 12px;
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--mn-color);
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-  min-width: 30px;
-}
-
-.sedo-nav__collapse:hover {
   background: var(--accent-info-bg);
-  color: var(--brand-primary);
-  border-color: var(--brand-primary);
 }
 
 @media (max-width: 768px) {
