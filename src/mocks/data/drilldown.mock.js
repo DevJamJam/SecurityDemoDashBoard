@@ -1,14 +1,14 @@
-﻿// Drilldown modal mock data. All values are portfolio-safe sample data.
+// Drilldown modal mock data. All values are portfolio-safe sample data.
 
 const ASSET_POOL = [
-  { asset_cce_uuid: "asset-cce-001", asset_uuid: "asset-001", ast_hostname: "web-app-01", ast_ipaddr: "10.0.1.11", risk_level: "HIGH", vuln_count: 7, dept_id: "dept-002", ast_operator_person: "홍길동" },
-  { asset_cce_uuid: "asset-cce-002", asset_uuid: "asset-002", ast_hostname: "api-server-02", ast_ipaddr: "10.0.1.21", risk_level: "MEDIUM", vuln_count: 3, dept_id: "dept-002", ast_operator_person: "홍길동" },
-  { asset_cce_uuid: "asset-cce-003", asset_uuid: "asset-003", ast_hostname: "db-primary-01", ast_ipaddr: "10.0.3.11", risk_level: "HIGH", vuln_count: 5, dept_id: "dept-004", ast_operator_person: "이인프라" },
-  { asset_cce_uuid: "asset-cce-004", asset_uuid: "asset-004", ast_hostname: "mail-relay-01", ast_ipaddr: "10.0.2.11", risk_level: "MEDIUM", vuln_count: 2, dept_id: "dept-003", ast_operator_person: "박보안" },
-  { asset_cce_uuid: "asset-cce-005", asset_uuid: "asset-005", ast_hostname: "jump-host-01", ast_ipaddr: "10.0.1.31", risk_level: "LOW", vuln_count: 1, dept_id: "dept-002", ast_operator_person: "홍길동" },
-  { asset_cce_uuid: "asset-cce-006", asset_uuid: "asset-006", ast_hostname: "mon-server-01", ast_ipaddr: "10.0.2.21", risk_level: "LOW", vuln_count: 1, dept_id: "dept-003", ast_operator_person: "박보안" },
-  { asset_cce_uuid: "asset-cce-007", asset_uuid: "asset-007", ast_hostname: "infra-fw-01", ast_ipaddr: "10.0.3.21", risk_level: "HIGH", vuln_count: 4, dept_id: "dept-004", ast_operator_person: "이인프라" },
-  { asset_cce_uuid: "asset-cce-008", asset_uuid: "asset-008", ast_hostname: "backup-srv-01", ast_ipaddr: "10.0.3.31", risk_level: "MEDIUM", vuln_count: 2, dept_id: "dept-004", ast_operator_person: "이인프라" },
+  { inspectionId: "insp-001", id: "ast-001", name: "web-server-01",  ipAddress: "10.0.1.11", risk_level: "HIGH",   vuln_count: 7, cce_count: 5, cve_count: 2, dept_id: "dept-002", owner: "홍길동" },
+  { inspectionId: "insp-002", id: "ast-002", name: "api-server-02",  ipAddress: "10.0.1.21", risk_level: "MEDIUM", vuln_count: 3, cce_count: 3, cve_count: 2, dept_id: "dept-002", owner: "홍길동" },
+  { inspectionId: "insp-003", id: "ast-003", name: "db-primary-01",  ipAddress: "10.0.3.11", risk_level: "HIGH",   vuln_count: 5, cce_count: 2, cve_count: 1, dept_id: "dept-004", owner: "이인프라" },
+  { inspectionId: "insp-004", id: "ast-004", name: "mail-relay-01",  ipAddress: "10.0.2.11", risk_level: "MEDIUM", vuln_count: 2, cce_count: 2, cve_count: 0, dept_id: "dept-003", owner: "박보안" },
+  { inspectionId: "insp-005", id: "ast-005", name: "jump-host-01",   ipAddress: "10.0.1.31", risk_level: "LOW",    vuln_count: 1, cce_count: 1, cve_count: 0, dept_id: "dept-002", owner: "홍길동" },
+  { inspectionId: "insp-006", id: "ast-006", name: "mon-server-01",  ipAddress: "10.0.2.21", risk_level: "LOW",    vuln_count: 1, cce_count: 1, cve_count: 0, dept_id: "dept-003", owner: "박보안" },
+  { inspectionId: "insp-007", id: "ast-007", name: "infra-fw-01",    ipAddress: "10.0.3.21", risk_level: "HIGH",   vuln_count: 4, cce_count: 3, cve_count: 1, dept_id: "dept-004", owner: "이인프라" },
+  { inspectionId: "insp-008", id: "ast-008", name: "backup-srv-01",  ipAddress: "10.0.3.31", risk_level: "MEDIUM", vuln_count: 2, cce_count: 2, cve_count: 0, dept_id: "dept-004", owner: "이인프라" },
 ];
 
 function filterByDept(deptId) {
@@ -21,19 +21,24 @@ export function getScopedAssets(deptId) {
   return filterByDept(deptId);
 }
 
+// 각 단계별 대상 자산. dept 분포:
+//   dept-002: insp-001, insp-002, insp-005
+//   dept-003: insp-004, insp-006
+//   dept-004: insp-003, insp-007, insp-008
+// → 전사 합산: planReg:4, planApproval:3, resultReg:3, resultApproval:2, resultFix:3, redetect:3
 const STEP_ASSET_MAP = {
-  planReg: ["asset-cce-001", "asset-cce-003", "asset-cce-007"],
-  planApproval: ["asset-cce-002", "asset-cce-004"],
-  resultReg: ["asset-cce-001", "asset-cce-008"],
-  resultApproval: ["asset-cce-003"],
-  resultFix: ["asset-cce-002", "asset-cce-006"],
-  redetect: ["asset-cce-001", "asset-cce-007"],
+  planReg:       ["insp-001", "insp-003", "insp-006", "insp-007"],
+  planApproval:  ["insp-002", "insp-004", "insp-007"],
+  resultReg:     ["insp-001", "insp-004", "insp-008"],
+  resultApproval:["insp-003", "insp-006"],
+  resultFix:     ["insp-002", "insp-006", "insp-008"],
+  redetect:      ["insp-001", "insp-004", "insp-007"],
 };
 
 export function getPendingAssets({ deptId, stepKey }) {
   const pool = filterByDept(deptId);
   const ids = STEP_ASSET_MAP[stepKey] || STEP_ASSET_MAP.planReg;
-  return pool.filter((asset) => ids.includes(asset.asset_cce_uuid));
+  return pool.filter((asset) => ids.includes(asset.inspectionId));
 }
 
 export function getCommandFailureAssets(deptId) {
@@ -53,21 +58,21 @@ export function getUncheckedAssets({ deptId, category }) {
   const pool = filterByDept(deptId);
   if (category === "cce_only") return pool.filter((asset) => asset.risk_level !== "LOW").slice(0, 2);
   if (category === "cve_only") return pool.filter((asset) => asset.risk_level === "HIGH").slice(0, 2);
-  if (category === "both") return pool.filter((asset) => asset.risk_level === "HIGH").slice(0, 1);
+  if (category === "both")     return pool.filter((asset) => asset.risk_level === "HIGH").slice(0, 1);
   return pool.slice(0, 2);
 }
 
 export const MOCK_CCE_PLANS = {
   plans: [
     { ccp_index: "ccp-001", ccp_name: "2024년 2분기 정기 점검", target_count: 12, status: "진행중", started_at: "2024-06-01" },
-    { ccp_index: "ccp-002", ccp_name: "신규 서버 초기 점검", target_count: 3, status: "진행중", started_at: "2024-06-10" },
+    { ccp_index: "ccp-002", ccp_name: "신규 서버 초기 점검",     target_count: 3,  status: "진행중", started_at: "2024-06-10" },
   ],
 };
 
 export const MOCK_CVE_SCANS = {
   scans: [
-    { job_id: "job-001", job_name: "전사 CVE 정기 스캔", target_count: 18, status: "진행중", started_at: "2024-06-05" },
-    { job_id: "job-002", job_name: "인프라 긴급 스캔", target_count: 5, status: "진행중", started_at: "2024-06-12" },
+    { job_id: "job-001", job_name: "전사 CVE 정기 스캔",  target_count: 18, status: "진행중", started_at: "2024-06-05" },
+    { job_id: "job-002", job_name: "인프라 긴급 스캔",     target_count: 5,  status: "진행중", started_at: "2024-06-12" },
   ],
 };
 
@@ -86,6 +91,6 @@ export const MOCK_UNCHECKED_SUMMARY = {
   categories: [
     { key: "cce_only", label: "CCE 미점검 자산", count: 3 },
     { key: "cve_only", label: "CVE 미점검 자산", count: 2 },
-    { key: "both", label: "CCE/CVE 모두 미점검 자산", count: 2 },
+    { key: "both",     label: "CCE/CVE 모두 미점검 자산", count: 2 },
   ],
 };

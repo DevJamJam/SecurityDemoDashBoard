@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { FiPlay, FiSquare, FiRefreshCw } from "react-icons/fi";
 import Swal from "sweetalert2";
 import useExecutionStore from "@/store/useExecutionStore";
@@ -7,12 +8,36 @@ import StatusBadge from "@/components/common/StatusBadge";
 import ProgressBar from "@/components/common/ProgressBar";
 import Button from "@/components/common/Button";
 
+const POLL_INTERVAL = 10_000;
+
+const STATUS_FILTERS = [
+  { value: "all",       label: "전체" },
+  { value: "running",   label: "실행중" },
+  { value: "completed", label: "완료" },
+  { value: "scheduled", label: "예약" },
+  { value: "failed",    label: "실패" },
+];
+
 export default function ExecutionMonitor() {
-  const { jobs, loading, fetchJobs, updateStatus, clearPersistedStates } = useExecutionStore();
+  const location = useLocation();
+  const { jobs, loading, fetchJobs, updateStatus, clearPersistedStates, silentPoll } = useExecutionStore();
+  const [statusFilter, setStatusFilter] = useState(location.state?.autoStatus ?? "all");
+  const pollRef = useRef(null);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
+
+  // running 작업이 있을 때만 10초 polling — 없어지면 자동 중단
+  const hasRunning = jobs.some((j) => j.status === "running");
+  useEffect(() => {
+    if (hasRunning) {
+      pollRef.current = setInterval(silentPoll, POLL_INTERVAL);
+    } else {
+      clearInterval(pollRef.current);
+    }
+    return () => clearInterval(pollRef.current);
+  }, [hasRunning, silentPoll]);
 
   const handleStart = async (job) => {
     const result = await Swal.fire({
@@ -25,7 +50,7 @@ export default function ExecutionMonitor() {
       confirmButtonColor: "#14b8a6",
     });
     if (result.isConfirmed) {
-      await updateStatus(job.id, "running");
+      await updateStatus(job.id, { status: "running" });
     }
   };
 
@@ -40,7 +65,7 @@ export default function ExecutionMonitor() {
       confirmButtonColor: "#ef4444",
     });
     if (result.isConfirmed) {
-      await updateStatus(job.id, "failed");
+      await updateStatus(job.id, { status: "failed" });
     }
   };
 
@@ -59,11 +84,15 @@ export default function ExecutionMonitor() {
     }
   };
 
+  // 필터는 로컬 상태 — polling으로 jobs가 갱신돼도 필터 초기화 없음
+  const filteredJobs = statusFilter === "all"
+    ? jobs
+    : jobs.filter((j) => j.status === statusFilter);
+
   return (
     <div className="page-content">
       <PageHeader
-        breadcrumb="점검 관리"
-        title="Execution Monitor"
+        title="실행 모니터"
         description="점검 작업 실행 현황 및 상태 관리 (Mock 데모 — localStorage 상태 유지)"
         actions={
           <Button variant="outline" size="sm" icon={<FiRefreshCw />} onClick={handleClear}>
@@ -72,18 +101,45 @@ export default function ExecutionMonitor() {
         }
       />
 
+      {/* 필터 + 자동 갱신 표시 */}
+      <div className="exec-toolbar">
+        <div className="exec-toolbar__filters">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              className={`exec-toolbar__filter-btn${statusFilter === f.value ? " is-active" : ""}`}
+              onClick={() => setStatusFilter(f.value)}
+            >
+              {f.label}
+              {f.value !== "all" && (
+                <span className="exec-toolbar__filter-count">
+                  {jobs.filter((j) => j.status === f.value).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        {hasRunning && (
+          <span className="exec-toolbar__poll-badge">
+            <span className="exec-toolbar__poll-dot" />
+            10초 자동 갱신 중
+          </span>
+        )}
+      </div>
+
       {loading ? (
         <div className="loading-state">
           <div className="loading-state__spinner" />
           <p>데이터를 불러오는 중...</p>
         </div>
-      ) : jobs.length === 0 ? (
+      ) : filteredJobs.length === 0 ? (
         <div className="empty-state">
-          <p className="empty-state__message">실행 작업이 없습니다.</p>
+          <p className="empty-state__message">해당 상태의 작업이 없습니다.</p>
         </div>
       ) : (
         <div className="execution-grid">
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <div key={job.id} className="card execution-card">
               <div className="execution-card__header">
                 <div className="execution-card__info">

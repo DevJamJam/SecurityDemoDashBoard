@@ -1,0 +1,165 @@
+.topo-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.topo-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4, 16px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--panel-color, #fff);
+  border: 1px solid var(--border-color, #d9e2ec);
+  border-radius: var(--radius-md, 10px);
+  font-size: var(--font-12, 12px);
+  color: var(--sub-text-color, #5b6677);
+}
+
+.topo-legend-line {
+  display: inline-block;
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.topo-legend-line--allow  { background: #16a34a; }
+.topo-legend-line--partial { background: #d4a017; }
+.topo-legend-line--block  { background: #dc2626; border-top: 2px dashed #dc2626; background: transparent; }
+.topo-legend-line--alert  { background: #b91c1c; }
+
+.topo-legend-hint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--sub-text-color, #8899aa);
+  opacity: 0.8;
+}
+
+.topo-pair-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: 8px 16px;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-12, 12px);
+}
+
+body.dark .topo-pair-filter {
+  background: #1e3a5f30;
+  border-color: #3b82f680;
+}
+
+.topo-pair-filter__label {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+body.dark .topo-pair-filter__label {
+  color: #93c5fd;
+}
+
+.topo-pair-filter__clear {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid #93c5fd;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #2563eb;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.topo-pair-filter__clear:hover { background: #dbeafe; }
+
+.topo-stage {
+  position: relative;
+  height: 520px;
+  border: 1px solid var(--border-color, #d9e2ec);
+  border-radius: var(--radius-md, 10px);
+  overflow: hidden;
+  background: var(--panel-color, #fafbfc);
+}
+
+/* ReactFlow 노드 커스텀 */
+.topo-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 2px;
+  padding: 8px;
+  text-align: center;
+}
+
+.topo-node__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color, #1e293b);
+  white-space: nowrap;
+}
+
+.topo-node__cidr {
+  font-size: 10px;
+  color: var(--sub-text-color, #64748b);
+  font-family: monospace;
+}
+
+.topo-node__risk {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* 선택 상태 */
+.topo-node--sel .react-flow__node { box-shadow: 0 0 0 3px var(--accent-color, #0891b2) !important; }
+.topo-node--dim { opacity: 0.3 !important; }
+.topo-node--conn { opacity: 0.7 !important; }
+
+.topo-edge--sel { opacity: 1 !important; }
+.topo-edge--dim { opacity: 0.15 !important; }
+.topo-edge--alert .react-flow__edge-path {
+  animation: pulse-edge 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-edge {
+  0%, 100% { stroke-opacity: 1; }
+  50% { stroke-opacity: 0.4; }
+}
+
+.topo-empty-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(2px);
+}
+
+.topo-empty-box {
+  text-align: center;
+  padding: 24px 32px;
+  background: var(--panel-color, #fff);
+  border: 1px solid var(--border-color, #d9e2ec);
+  border-radius: var(--radius-md, 10px);
+}
+
+.topo-empty-title {
+  font-size: 14px;
+  color: var(--sub-text-color, #5b6677);
+}
+
+/* ReactFlow 다크모드 대응 */
+body.dark .topo-stage {
+  background: var(--panel-color, #1e293b);
+}
+
+body.dark .react-flow__background {
+  background: var(--panel-color, #1e293b);
+}

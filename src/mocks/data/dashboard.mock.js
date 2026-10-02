@@ -24,9 +24,9 @@ const commonVulnerabilities = [
 ];
 
 const commonAssets = [
-  { asset_uuid: "asset-001", ast_hostname: "web-server-01", ast_ipaddr: "10.0.1.11", risk_level: "HIGH", ast_operator_person: "김개발", cce_count: 5, cve_count: 2 },
-  { asset_uuid: "asset-002", ast_hostname: "db-server-01", ast_ipaddr: "10.0.3.21", risk_level: "HIGH", ast_operator_person: "이인프라", cce_count: 4, cve_count: 3 },
-  { asset_uuid: "asset-003", ast_hostname: "app-server-01", ast_ipaddr: "10.0.2.31", risk_level: "MEDIUM", ast_operator_person: "박보안", cce_count: 2, cve_count: 1 },
+  { id: "ast-001", name: "web-server-01", ipAddress: "10.0.1.11", risk_level: "HIGH", owner: "김개발", cce_count: 5, cve_count: 2 },
+  { id: "ast-002", name: "db-server-01",  ipAddress: "10.0.3.21", risk_level: "HIGH", owner: "이인프라", cce_count: 4, cve_count: 3 },
+  { id: "ast-003", name: "app-server-01", ipAddress: "10.0.2.31", risk_level: "MEDIUM", owner: "박보안", cce_count: 2, cve_count: 1 },
 ];
 
 const dept002 = {
@@ -55,16 +55,18 @@ const dept002 = {
     security_rate: makeMonthlyTrend(MONTHS, [55, 57, 59, 61, 63, 65]),
     fix_rate: makeMonthlyTrend(MONTHS, [44, 47, 50, 52, 55, 58]),
   },
+  // dept-002 drilldown 자산: insp-001(planReg/resultReg/redetect), insp-002(planApproval/resultFix)
+  // → 전 단계 최대 1건, resultApproval 없음
   operation_trend: operationTrend(
     [
-      { inspected_assets: 12, found_count: 5, remaining_count: 3, redetect_count: 1, plan_registered: 4, plan_approved: 3, result_registered: 2, result_approved: 2, resolved_count: 2 },
-      { inspected_assets: 14, found_count: 4, remaining_count: 3, redetect_count: 1, plan_registered: 4, plan_approved: 3, result_registered: 2, result_approved: 2, resolved_count: 1 },
-      { inspected_assets: 15, found_count: 3, remaining_count: 2, redetect_count: 0, plan_registered: 3, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 2, redetect_count: 1, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 0, resolved_count: 0 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 1, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 0, resolved_count: 1 },
+      { inspected_assets: 3, found_count: 3, remaining_count: 1, redetect_count: 1, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 0, resolved_count: 1 },
     ],
     [
-      { inspected_assets: 12, found_count: 3, remaining_count: 2, redetect_count: 0, plan_registered: 2, plan_approved: 2, result_registered: 1, result_approved: 1, resolved_count: 1 },
-      { inspected_assets: 14, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 2, plan_approved: 2, result_registered: 1, result_approved: 1, resolved_count: 1 },
-      { inspected_assets: 15, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 1, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 0, resolved_count: 0 },
+      { inspected_assets: 2, found_count: 1, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 0, resolved_count: 0 },
+      { inspected_assets: 3, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 0, resolved_count: 1 },
     ],
   ),
 };
@@ -98,16 +100,18 @@ const dept003 = {
     security_rate: makeMonthlyTrend(MONTHS, [72, 74, 75, 77, 78, 80]),
     fix_rate: makeMonthlyTrend(MONTHS, [62, 64, 66, 68, 70, 72]),
   },
+  // dept-003 drilldown 자산: insp-004(planApproval/resultReg/redetect), insp-006(planReg/resultApproval/resultFix)
+  // → 전 단계 각 1건씩 존재
   operation_trend: operationTrend(
     [
-      { inspected_assets: 10, found_count: 4, remaining_count: 3, redetect_count: 1, plan_registered: 3, plan_approved: 3, result_registered: 2, result_approved: 2, resolved_count: 1 },
-      { inspected_assets: 12, found_count: 4, remaining_count: 2, redetect_count: 0, plan_registered: 3, plan_approved: 2, result_registered: 2, result_approved: 2, resolved_count: 2 },
-      { inspected_assets: 14, found_count: 3, remaining_count: 2, redetect_count: 1, plan_registered: 2, plan_approved: 2, result_registered: 2, result_approved: 2, resolved_count: 1 },
+      { inspected_assets: 1, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
     ],
     [
-      { inspected_assets: 10, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 2, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
-      { inspected_assets: 12, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
-      { inspected_assets: 14, found_count: 1, remaining_count: 0, redetect_count: 1, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 1, found_count: 1, remaining_count: 0, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 1, remaining_count: 0, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 1, remaining_count: 0, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
     ],
   ),
 };
@@ -141,16 +145,18 @@ const dept004 = {
     security_rate: makeMonthlyTrend(MONTHS, [45, 47, 49, 51, 53, 55]),
     fix_rate: makeMonthlyTrend(MONTHS, [34, 36, 38, 40, 42, 44]),
   },
+  // dept-004 drilldown 자산: insp-003(planReg/resultApproval), insp-007(planReg/planApproval/redetect), insp-008(resultReg/resultFix)
+  // 6월: planReg:2, 나머지 각 1건 / 5월~4월: 전 단계 각 1건
   operation_trend: operationTrend(
     [
-      { inspected_assets: 8, found_count: 3, remaining_count: 2, redetect_count: 0, plan_registered: 3, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 1 },
-      { inspected_assets: 9, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 2, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 1 },
-      { inspected_assets: 9, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 2, plan_approved: 2, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 1, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 1, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 3, found_count: 3, remaining_count: 1, redetect_count: 1, plan_registered: 2, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
     ],
     [
-      { inspected_assets: 6, found_count: 1, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 0 },
-      { inspected_assets: 6, found_count: 1, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 0 },
-      { inspected_assets: 6, found_count: 1, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 0, result_approved: 0, resolved_count: 0 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 0 },
+      { inspected_assets: 2, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 1, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 3, found_count: 2, remaining_count: 1, redetect_count: 0, plan_registered: 2, plan_approved: 1, result_registered: 1, result_approved: 1, resolved_count: 1 },
     ],
   ),
 };
@@ -185,16 +191,19 @@ const dept001 = {
     security_rate: makeMonthlyTrend(MONTHS, [58, 60, 63, 65, 67, 69]),
     fix_rate: makeMonthlyTrend(MONTHS, [46, 49, 52, 55, 58, 61]),
   },
+  // 전사 drilldown 합산: 6월 planReg:4, planApproval:3, resultReg:3, resultApproval:2, resultFix:3, redetect:3
+  //                     5월 planReg:3, planApproval:2, resultReg:2, resultApproval:1, resultFix:2, redetect:2
+  //                     4월 planReg:2, planApproval:2, resultReg:2, resultApproval:1, resultFix:2, redetect:2
   operation_trend: operationTrend(
     [
-      { inspected_assets: 30, found_count: 12, remaining_count: 8, redetect_count: 2, plan_registered: 10, plan_approved: 8, result_registered: 6, result_approved: 5, resolved_count: 4 },
-      { inspected_assets: 35, found_count: 10, remaining_count: 6, redetect_count: 1, plan_registered: 9, plan_approved: 7, result_registered: 6, result_approved: 5, resolved_count: 4 },
-      { inspected_assets: 38, found_count: 8, remaining_count: 5, redetect_count: 1, plan_registered: 7, plan_approved: 6, result_registered: 5, result_approved: 4, resolved_count: 3 },
+      { inspected_assets: 5, found_count: 7, remaining_count: 3, redetect_count: 2, plan_registered: 2, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 2 },
+      { inspected_assets: 6, found_count: 8, remaining_count: 3, redetect_count: 2, plan_registered: 3, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 3 },
+      { inspected_assets: 8, found_count: 10, remaining_count: 4, redetect_count: 3, plan_registered: 4, plan_approved: 3, result_registered: 3, result_approved: 2, resolved_count: 3 },
     ],
     [
-      { inspected_assets: 28, found_count: 6, remaining_count: 4, redetect_count: 0, plan_registered: 5, plan_approved: 4, result_registered: 3, result_approved: 3, resolved_count: 2 },
-      { inspected_assets: 32, found_count: 5, remaining_count: 3, redetect_count: 0, plan_registered: 4, plan_approved: 4, result_registered: 3, result_approved: 3, resolved_count: 2 },
-      { inspected_assets: 35, found_count: 4, remaining_count: 2, redetect_count: 1, plan_registered: 3, plan_approved: 3, result_registered: 2, result_approved: 2, resolved_count: 2 },
+      { inspected_assets: 4, found_count: 3, remaining_count: 2, redetect_count: 0, plan_registered: 2, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 1 },
+      { inspected_assets: 5, found_count: 4, remaining_count: 2, redetect_count: 0, plan_registered: 3, plan_approved: 2, result_registered: 2, result_approved: 1, resolved_count: 2 },
+      { inspected_assets: 6, found_count: 5, remaining_count: 2, redetect_count: 0, plan_registered: 4, plan_approved: 3, result_registered: 3, result_approved: 2, resolved_count: 2 },
     ],
   ),
 };

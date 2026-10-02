@@ -40,18 +40,33 @@ const useExecutionStore = create((set, get) => ({
     try {
       const res = await getExecutionJobs({ page: currentPage, pageSize });
       const persisted = get().persistedStates;
-
       const items = res.data.items.map((job) => {
         const override = persisted[job.id];
-        if (override) {
+        return override ? { ...job, ...override } : job;
+      });
+      set({ jobs: items, totalCount: res.data.total, loading: false });
+    } catch {
+      set({ error: "실행 목록을 불러오지 못했습니다.", loading: false });
+    }
+  },
+
+  // 백그라운드 polling 전용 — loading 상태를 바꾸지 않아 UI 깜빡임 없음
+  // persisted override는 사용자가 직접 바꾼 status에만 적용, running 진행률은 API 값 우선
+  silentPoll: async () => {
+    const { currentPage, pageSize } = get();
+    try {
+      const res = await getExecutionJobs({ page: currentPage, pageSize });
+      const persisted = get().persistedStates;
+      const items = res.data.items.map((job) => {
+        const override = persisted[job.id];
+        if (override?.status && override.status !== "running") {
           return { ...job, ...override };
         }
         return job;
       });
-
-      set({ jobs: items, totalCount: res.data.total, loading: false });
+      set({ jobs: items, totalCount: res.data.total });
     } catch {
-      set({ error: "실행 목록을 불러오지 못했습니다.", loading: false });
+      // 백그라운드 실패는 무시 — 현재 표시 중인 데이터 유지
     }
   },
 

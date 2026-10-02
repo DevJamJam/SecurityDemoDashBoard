@@ -75,6 +75,7 @@ export default function InspectionPlanList() {
     pageSize,
     filters,
     loading,
+    error,
     setFilters,
     setPage,
     setSort,
@@ -85,7 +86,10 @@ export default function InspectionPlanList() {
     fetchPlans();
   }, [fetchPlans]);
 
-  const handleSearch = () => {
+  // select에서 newValues를 받으면 먼저 store에 반영 후 fetch
+  // Zustand set은 동기라 fetchPlans()에서 getState()로 최신 값을 읽음
+  const handleSearch = (f) => {
+    if (f != null) setFilters(f);
     setPage(1);
     fetchPlans();
   };
@@ -99,8 +103,7 @@ export default function InspectionPlanList() {
   return (
     <div className="page-content">
       <PageHeader
-        breadcrumb="점검 관리"
-        title="Inspection Plans"
+        title="점검 계획"
         description="보안 점검 계획 목록 및 상세 조회"
       />
 
@@ -117,6 +120,10 @@ export default function InspectionPlanList() {
           <div className="loading-state__spinner" />
           <p>데이터를 불러오는 중...</p>
         </div>
+      ) : error ? (
+        <div className="empty-state">
+          <p className="empty-state__message" style={{ color: "var(--status-danger)" }}>{error}</p>
+        </div>
       ) : (
         <>
           <CommonTable
@@ -126,7 +133,7 @@ export default function InspectionPlanList() {
             currentPage={currentPage}
             pageSize={pageSize}
             onSort={(key, dir) => { setSort(key, dir); fetchPlans(); }}
-            onRowClick={(row) => navigate(`/inspection-plans/${row.id}`)}
+            onRowClick={(row) => navigate(`/sedo/inspection-plans/${row.id}`)}
             noDataMessage="조회된 점검 계획이 없습니다."
           />
           <Pagination

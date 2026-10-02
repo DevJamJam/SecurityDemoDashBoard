@@ -1,5 +1,5 @@
 ﻿import { http, HttpResponse, delay } from "msw";
-import { mockUser, DEMO_ACCOUNTS } from "./data/auth.mock";
+import { DEMO_ACCOUNTS } from "./data/auth.mock";
 import { mockOrgTree } from "./data/org.mock";
 import { DEPT_DATASETS } from "./data/dashboard.mock";
 import {
@@ -19,9 +19,20 @@ const MOCK_DELAY = 300;
 let sessionActive = false;
 let currentSessionUser = null;
 
+// 실행 중 작업 진행률 시뮬레이션 — poll마다 3~6% 증가, 100% 도달 시 completed
+const _runSim = { "job-007": 62, "job-008": 45, "job-009": 28, "job-010": 15 };
+function tickRunning() {
+  for (const id of Object.keys(_runSim)) {
+    if (_runSim[id] < 100) _runSim[id] = Math.min(100, _runSim[id] + 3 + Math.floor(Math.random() * 4));
+  }
+}
+
+// e2e 테스트 전용 — /__test/error-flags 엔드포인트로 제어
+const _testErrorFlags = new Set();
+
 const ok = (code) => HttpResponse.json({ RESULT: "OK", CODE: code });
 const fail = (msg) => HttpResponse.json({ RESULT: "FAIL", CODE: msg }, { status: 400 });
-// 濡쒓렇???몄쬆 ?ㅽ뙣??鍮꾩쫰?덉뒪 濡쒖쭅 ?ㅻ쪟 ??HTTP 200 + RESULT: FAIL (axios媛 throw?섏? ?딆쓬)
+// 로그인 인증 실패는 HTTP 200 + RESULT: FAIL 반환 (axios가 throw하지 않음)
 const authFail = (msg) => HttpResponse.json({ RESULT: "FAIL", CODE: msg });
 
 const getDeptDataset = (deptId) =>
@@ -55,8 +66,8 @@ const takeMockAssets = (deptId, count, preferred = []) => {
     const asset = source[index % source.length];
     return {
       ...asset,
-      asset_cce_uuid: index < source.length ? asset.asset_cce_uuid : `${asset.asset_cce_uuid}-${index + 1}`,
-      asset_uuid: index < source.length ? asset.asset_uuid : `${asset.asset_uuid}-${index + 1}`,
+      inspectionId: index < source.length ? asset.inspectionId : `${asset.inspectionId}-${index + 1}`,
+      id: index < source.length ? asset.id : `${asset.id}-${index + 1}`,
     };
   });
 };
@@ -90,7 +101,7 @@ const withAssetContext = (asset, issue, index = 0) => ({
   ...asset,
   ...issue,
   vuln_type: issue.vuln_id?.startsWith("CVE") ? "CVE" : "CCE",
-  vuln_person: asset.ast_operator_person || "-",
+  vuln_person: asset.owner || "-",
   current_step: issue.step_key || "planReg",
   step_label: issue.status || "-",
   created_at: new Date(Date.now() - (index + 1) * 86400000).toISOString(),
@@ -100,15 +111,15 @@ const withAssetContext = (asset, issue, index = 0) => ({
 const makeIssues = (asset, type = "all") => {
   const cceCount = Math.max(0, asset?.cce_count ?? 2);
   const cveCount = Math.max(0, asset?.cve_count ?? 1);
-  const cce = takeMockItems(issueTemplates.CCE, cceCount).map((issue, index) => ({
+  const cce = takeMockItems(issueTemplates.CCE, cceCount).map((issue) => ({
     ...issue,
     name: issue.vuln_label,
-    asset_uuid: asset?.asset_uuid,
+    assetId: asset?.id,
   }));
-  const cve = takeMockItems(issueTemplates.CVE, cveCount).map((issue, index) => ({
+  const cve = takeMockItems(issueTemplates.CVE, cveCount).map((issue) => ({
     ...issue,
     name: issue.vuln_label,
-    asset_uuid: asset?.asset_uuid,
+    assetId: asset?.id,
   }));
   if (type === "cce") return { cce_issues: cce, cve_issues: [] };
   if (type === "cve") return { cce_issues: [], cve_issues: cve };
@@ -126,18 +137,18 @@ const makeTickets = (deptId, status) => {
 };
 
 export const handlers = [
-  // ???????????????????? Auth ????????????????????
+  // Auth
   http.post("/api/auth/login", async ({ request }) => {
     await delay(MOCK_DELAY);
     const body = await request.json();
     if (!body.user_email || !body.user_pw) {
-      return authFail("?대찓?쇨낵 鍮꾨?踰덊샇瑜??낅젰?댁＜?몄슂.");
+      return authFail("아이디와 비밀번호를 입력해주세요.");
     }
     const matched = DEMO_ACCOUNTS.find(
       (a) => a.user_email === body.user_email && a.user_pw === body.user_pw
     );
     if (!matched) {
-      return authFail("?대찓???먮뒗 鍮꾨?踰덊샇媛 ?щ컮瑜댁? ?딆뒿?덈떎.");
+      return authFail("아이디 또는 비밀번호를 확인해주세요.");
     }
     sessionActive = true;
     currentSessionUser = matched;
@@ -148,13 +159,13 @@ export const handlers = [
     await delay(MOCK_DELAY);
     sessionActive = false;
     currentSessionUser = null;
-    return ok("濡쒓렇?꾩썐 ?꾨즺");
+    return ok("로그아웃 완료");
   }),
 
   http.get("/api/auth/me", async () => {
     await delay(MOCK_DELAY);
     if (!sessionActive || !currentSessionUser) {
-      return fail("?몄뀡??留뚮즺?섏뿀?듬땲??");
+      return fail("세션이 만료되었습니다.");
     }
     const u = currentSessionUser;
     return ok({
@@ -171,8 +182,8 @@ export const handlers = [
   http.post("/api/auth/change-password", async ({ request }) => {
     await delay(MOCK_DELAY);
     const body = await request.json();
-    if (!body.current_pw || !body.new_pw) return fail("?낅젰媛믪씠 ?щ컮瑜댁? ?딆뒿?덈떎.");
-    return ok("鍮꾨?踰덊샇 蹂寃??꾨즺");
+    if (!body.current_pw || !body.new_pw) return fail("입력값이 올바르지 않습니다.");
+    return ok("비밀번호 변경 완료");
   }),
 
   http.post("/api/auth/check-email", async ({ request }) => {
@@ -187,7 +198,7 @@ export const handlers = [
     await delay(MOCK_DELAY);
     const body = await request.json().catch(() => ({}));
     if (!body.user_email || !body.user_pw) {
-      return fail("?뚯썝媛???꾩닔媛믪씠 ?꾨씫?섏뿀?듬땲??");
+      return fail("필수 입력값이 누락되었습니다.");
     }
     return ok({
       user_index: `usr-${Date.now()}`,
@@ -197,7 +208,7 @@ export const handlers = [
     });
   }),
 
-  // ???????????????????? Org ????????????????????
+  // Org
   http.get("/api/org/tree", async () => {
     await delay(MOCK_DELAY);
     return ok(mockOrgTree);
@@ -252,7 +263,7 @@ export const handlers = [
     return ok({
       dept_id: body.dept_id,
       members: [
-        { user_index: "usr-001", user_name: "愿由ъ옄", user_email: "admin@sedo.dev" },
+        { user_index: "usr-001", user_name: "시스템 관리자", user_email: "admin@sedo.dev" },
         { user_index: "usr-002", user_name: "부서장", user_email: "user@sedo.dev" },
       ],
     });
@@ -286,7 +297,7 @@ export const handlers = [
     return ok("조직이 삭제되었습니다.");
   }),
 
-  // ???????????????????? Dashboard ????????????????????
+  // Dashboard
   http.post("/api/dashboard", async ({ request }) => {
     await delay(MOCK_DELAY * 1.5);
     const body = await request.json().catch(() => ({}));
@@ -323,7 +334,7 @@ export const handlers = [
       ],
     };
 
-    // dept_id 湲곗??쇰줈 ?대떦 ?ш컖?꾩쓽 移댁슫?몃? 議고쉶???щ씪?댁뒪 ??諛곗? ?レ옄? ??긽 ?쇱튂
+    // dept_id 기준으로 해당 부서의 알림 건수를 반환
     const deptData = (dept_id && DEPT_DATASETS[dept_id]) ? DEPT_DATASETS[dept_id] : DEPT_DATASETS["root"];
     const count = deptData?.alerts?.[severity] ?? 0;
     const items = (ALL_ALERTS[severity] || []).slice(0, count);
@@ -438,7 +449,7 @@ export const handlers = [
   http.post("/api/dashboard/asset-issues", async ({ request }) => {
     await delay(MOCK_DELAY);
     const body = await request.json().catch(() => ({}));
-    const asset = getScopedAssets(null).find((item) => item.asset_uuid === body.asset_uuid) || getScopedAssets(null)[0];
+    const asset = getScopedAssets(null).find((item) => item.id === body.asset_id) || getScopedAssets(null)[0];
     const issues = makeIssues(asset, body.type || "all");
     return ok({
       ...issues,
@@ -499,7 +510,7 @@ export const handlers = [
     return ok(MOCK_REMEDIATION_HISTORY);
   }),
 
-  // ???????????????????? Bookmark ????????????????????
+  // Bookmark
   http.get("/api/user/bookmark", async () => {
     await delay(MOCK_DELAY);
     return ok({ user_bookmark: { CCE: [], CVE: [], COMMAND: [], DASHBOARD: [], ASSET: [] } });
@@ -507,40 +518,124 @@ export const handlers = [
 
   http.post("/api/user/bookmark", async () => {
     await delay(MOCK_DELAY);
-    return ok("遺곷쭏??????꾨즺");
+    return ok("북마크 저장 완료");
   }),
 
-  // ???????????????????? SecurityDemo API (ExecutionMonitor / DashboardHome ?? ????????????????????
-  http.get("/api/inspection-plans", async () => {
+  // SecurityDemo API
+  http.get("/api/inspection-plans", async ({ request }) => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({
-      items: [
-        { id: "plan-001", title: "서버 정기 보안 점검", targetGroup: "IT인프라", status: "completed", inspectionType: "CCE", score: 82, createdAt: "2024-05-01" },
-        { id: "plan-002", title: "개발 환경 취약점 점검", targetGroup: "개발팀", status: "running", inspectionType: "CVE", score: 71, createdAt: "2024-05-15" },
-        { id: "plan-003", title: "보안 패치 적용 점검", targetGroup: "전체", status: "pending", inspectionType: "CCE", score: 0, createdAt: "2024-06-01" },
-        { id: "plan-004", title: "네트워크 접근 통제 점검", targetGroup: "인프라팀", status: "completed", inspectionType: "CCE", score: 77, createdAt: "2024-04-20" },
-        { id: "plan-005", title: "취약점 DB 기준 정밀 스캔", targetGroup: "전체", status: "pending", inspectionType: "CVE", score: 0, createdAt: "2024-06-10" },
-      ],
-      total: 5,
-    });
+    if (_testErrorFlags.has("inspection-plans")) return new HttpResponse(null, { status: 500 });
+    const url = new URL(request.url);
+    const qTitle          = url.searchParams.get("title") || "";
+    const qTargetGroup    = url.searchParams.get("targetGroup") || "";
+    const qStatus         = url.searchParams.get("status") || "";
+    const qInspectionType = url.searchParams.get("inspectionType") || "";
+    const page            = parseInt(url.searchParams.get("page") || "1", 10);
+    const pageSize        = parseInt(url.searchParams.get("pageSize") || "10", 10);
+
+    const ALL = [
+      { id: "plan-001", title: "1분기 서버 정기 보안 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "completed", score: 82, scheduledAt: "2024-03-15" },
+      { id: "plan-002", title: "개발 환경 취약점 스캔", targetGroup: "개발1팀", inspectionType: "comprehensive", status: "completed", score: 71, scheduledAt: "2024-03-22" },
+      { id: "plan-003", title: "DMZ 구간 네트워크 보안 점검", targetGroup: "인프라팀", inspectionType: "network", status: "completed", score: 88, scheduledAt: "2024-04-05" },
+      { id: "plan-004", title: "데이터베이스 접근 제어 점검", targetGroup: "DB팀", inspectionType: "database", status: "completed", score: 76, scheduledAt: "2024-04-10" },
+      { id: "plan-005", title: "클라우드 인프라 보안 점검", targetGroup: "클라우드팀", inspectionType: "server", status: "completed", score: 91, scheduledAt: "2024-04-20" },
+      { id: "plan-006", title: "ERP 시스템 취약점 점검", targetGroup: "ERP팀", inspectionType: "database", status: "completed", score: 68, scheduledAt: "2024-04-25" },
+      { id: "plan-007", title: "2분기 서버 정기 보안 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "completed", score: 85, scheduledAt: "2024-05-10" },
+      { id: "plan-008", title: "무선 네트워크 보안 점검", targetGroup: "네트워크팀", inspectionType: "network", status: "completed", score: 79, scheduledAt: "2024-05-15" },
+      { id: "plan-009", title: "업무 PC 취약점 점검", targetGroup: "IT지원팀", inspectionType: "comprehensive", status: "completed", score: 74, scheduledAt: "2024-05-20" },
+      { id: "plan-010", title: "방화벽 정책 보안 점검", targetGroup: "보안팀", inspectionType: "network", status: "completed", score: 93, scheduledAt: "2024-05-28" },
+      { id: "plan-011", title: "API 서버 보안 취약점 점검", targetGroup: "개발2팀", inspectionType: "server", status: "completed", score: 67, scheduledAt: "2024-06-05" },
+      { id: "plan-012", title: "재해복구 시스템 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "completed", score: 87, scheduledAt: "2024-06-12" },
+      { id: "plan-013", title: "3분기 종합 보안 점검", targetGroup: "전체", inspectionType: "comprehensive", status: "in_progress", score: null, scheduledAt: "2024-07-05" },
+      { id: "plan-014", title: "내부망 세그먼트 점검", targetGroup: "인프라팀", inspectionType: "network", status: "in_progress", score: null, scheduledAt: "2024-07-10" },
+      { id: "plan-015", title: "결제 시스템 보안 점검", targetGroup: "서비스팀", inspectionType: "database", status: "in_progress", score: null, scheduledAt: "2024-07-15" },
+      { id: "plan-016", title: "소스코드 취약점 점검", targetGroup: "개발1팀", inspectionType: "comprehensive", status: "in_progress", score: null, scheduledAt: "2024-07-18" },
+      { id: "plan-017", title: "VPN 게이트웨이 보안 점검", targetGroup: "네트워크팀", inspectionType: "network", status: "scheduled", score: null, scheduledAt: "2024-08-01" },
+      { id: "plan-018", title: "메일 서버 보안 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "scheduled", score: null, scheduledAt: "2024-08-05" },
+      { id: "plan-019", title: "HR 시스템 취약점 점검", targetGroup: "HR팀", inspectionType: "database", status: "scheduled", score: null, scheduledAt: "2024-08-10" },
+      { id: "plan-020", title: "3분기 네트워크 전수 점검", targetGroup: "인프라팀", inspectionType: "network", status: "scheduled", score: null, scheduledAt: "2024-08-15" },
+      { id: "plan-021", title: "모바일 앱 보안 점검", targetGroup: "개발2팀", inspectionType: "comprehensive", status: "scheduled", score: null, scheduledAt: "2024-08-20" },
+      { id: "plan-022", title: "백업 서버 보안 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "scheduled", score: null, scheduledAt: "2024-08-25" },
+      { id: "plan-023", title: "컨테이너 인프라 취약점 점검", targetGroup: "클라우드팀", inspectionType: "server", status: "scheduled", score: null, scheduledAt: "2024-09-01" },
+      { id: "plan-024", title: "랜섬웨어 대응 취약점 점검", targetGroup: "보안팀", inspectionType: "comprehensive", status: "scheduled", score: null, scheduledAt: "2024-09-05" },
+      { id: "plan-025", title: "외부망 노출 서비스 점검", targetGroup: "인프라팀", inspectionType: "network", status: "scheduled", score: null, scheduledAt: "2024-09-10" },
+      { id: "plan-026", title: "CRM 시스템 취약점 점검", targetGroup: "영업팀", inspectionType: "database", status: "failed", score: null, scheduledAt: "2024-06-20" },
+      { id: "plan-027", title: "OT 시스템 보안 점검", targetGroup: "제조팀", inspectionType: "server", status: "failed", score: null, scheduledAt: "2024-06-25" },
+      { id: "plan-028", title: "4분기 서버 정기 보안 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "scheduled", score: null, scheduledAt: "2024-10-05" },
+      { id: "plan-029", title: "4분기 종합 보안 취약점 점검", targetGroup: "전체", inspectionType: "comprehensive", status: "scheduled", score: null, scheduledAt: "2024-10-15" },
+      { id: "plan-030", title: "연말 보안 실태 점검", targetGroup: "전체", inspectionType: "comprehensive", status: "scheduled", score: null, scheduledAt: "2024-12-10" },
+    ];
+
+    let filtered = ALL;
+    if (qTitle)          filtered = filtered.filter((p) => p.title.includes(qTitle));
+    if (qTargetGroup)    filtered = filtered.filter((p) => p.targetGroup.includes(qTargetGroup));
+    if (qStatus)         filtered = filtered.filter((p) => p.status === qStatus);
+    if (qInspectionType) filtered = filtered.filter((p) => p.inspectionType === qInspectionType);
+
+    const total = filtered.length;
+    const items = filtered.slice((page - 1) * pageSize, page * pageSize);
+    return HttpResponse.json({ items, total });
   }),
 
   http.get("/api/inspection-plans/:id", async ({ params }) => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({ id: params.id, title: "점검 계획 상세", status: "completed", score: 80 });
+    const planMap = {
+      "plan-001": { title: "1분기 서버 정기 보안 점검", targetGroup: "IT인프라팀", inspectionType: "server", status: "completed", score: 82, scheduledAt: "2024-03-10", completedAt: "2024-03-15", assignee: "김보안", description: "IT 인프라 서버 전체에 대한 1분기 정기 보안 취약점 점검" },
+      "plan-002": { title: "개발 환경 취약점 스캔", targetGroup: "개발1팀", inspectionType: "server", status: "completed", score: 71, scheduledAt: "2024-03-20", completedAt: "2024-03-22", assignee: "이담당", description: "개발팀 서버 환경 전반의 취약점 및 설정 오류 점검" },
+      "plan-013": { title: "3분기 종합 보안 점검", targetGroup: "전체", inspectionType: "comprehensive", status: "in_progress", score: null, scheduledAt: "2024-07-05", completedAt: null, assignee: "박보안", description: "전사 자산 대상 3분기 종합 보안 점검" },
+    };
+    const base = planMap[params.id] || { title: "점검 계획 상세", targetGroup: "IT인프라팀", inspectionType: "server", status: "completed", score: 82, scheduledAt: "2024-03-15", completedAt: "2024-03-18", assignee: "김보안", description: "정기 보안 취약점 점검" };
+    return HttpResponse.json({
+      id: params.id,
+      ...base,
+      registrationRate: base.score ? Math.floor(base.score * 0.9) : 0,
+      assetBreakdown: [
+        { type: "서버 (Linux)", score: 85, count: 8 },
+        { type: "서버 (Windows)", score: 74, count: 5 },
+        { type: "네트워크 장비", score: 91, count: 3 },
+        { type: "데이터베이스", score: 68, count: 4 },
+      ],
+      assetList: [
+        { index: 1, name: "web-srv-001", ipAddress: "10.10.1.10", type: "서버(Linux)", status: "completed" },
+        { index: 2, name: "web-srv-002", ipAddress: "10.10.1.11", type: "서버(Linux)", status: "completed" },
+        { index: 3, name: "db-master-001", ipAddress: "10.10.3.10", type: "DB서버", status: "completed" },
+        { index: 4, name: "db-slave-001", ipAddress: "10.10.3.11", type: "DB서버", status: "failed" },
+        { index: 5, name: "fw-core-001", ipAddress: "10.10.5.1", type: "방화벽", status: "completed" },
+        { index: 6, name: "app-srv-001", ipAddress: "10.10.2.20", type: "서버(Windows)", status: "in_progress" },
+      ],
+      vulnerabilities: [
+        { id: "vuln-001", title: "패스워드 정책 미준수", severity: "high", category: "계정 관리", asset: "web-srv-001", status: "open" },
+        { id: "vuln-002", title: "불필요 서비스 (telnet) 활성화", severity: "high", category: "서비스 보안", asset: "db-slave-001", status: "open" },
+        { id: "vuln-003", title: "OS 패치 미적용 (CVE-2024-0012)", severity: "medium", category: "패치 관리", asset: "app-srv-001", status: "in_progress" },
+        { id: "vuln-004", title: "익명 FTP 접근 허용", severity: "medium", category: "접근 제어", asset: "web-srv-002", status: "resolved" },
+        { id: "vuln-005", title: "로그 모니터링 미설정", severity: "low", category: "감사 및 로깅", asset: "fw-core-001", status: "resolved" },
+      ],
+    });
   }),
 
   http.get("/api/execution-jobs", async () => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({
-      items: [
-        { id: "job-001", title: "서버 일괄 점검 실행", status: "completed", progress: 100, startedAt: "2024-05-10T09:00:00Z", completedAt: "2024-05-10T11:30:00Z" },
-        { id: "job-002", title: "취약점 스캔 실행", status: "running", progress: 60, startedAt: "2024-05-20T14:00:00Z" },
-        { id: "job-003", title: "패치 배포 스크립트", status: "pending", progress: 0 },
-        { id: "job-004", title: "정기 보안 점검 배치", status: "failed", progress: 35, startedAt: "2024-05-18T08:00:00Z" },
-      ],
-      total: 4,
-    });
+    tickRunning();
+    const r = (id) => ({ status: _runSim[id] >= 100 ? "completed" : "running", progress: _runSim[id] });
+    const items = [
+      { id: "job-001", title: "1분기 서버 점검 배치 실행",    targetGroup: "IT인프라팀", status: "completed", progress: 100, startedAt: "2024-03-15T09:00:00Z", completedAt: "2024-03-15T11:45:00Z" },
+      { id: "job-002", title: "개발 환경 취약점 스캔 실행",    targetGroup: "개발1팀",   status: "completed", progress: 100, startedAt: "2024-03-22T14:00:00Z", completedAt: "2024-03-22T16:30:00Z" },
+      { id: "job-003", title: "DMZ 네트워크 점검 배치",        targetGroup: "인프라팀",  status: "completed", progress: 100, startedAt: "2024-04-05T10:00:00Z", completedAt: "2024-04-05T12:15:00Z" },
+      { id: "job-004", title: "DB 접근 제어 점검 실행",        targetGroup: "DB팀",      status: "completed", progress: 100, startedAt: "2024-04-10T09:00:00Z", completedAt: "2024-04-10T10:50:00Z" },
+      { id: "job-005", title: "클라우드 인프라 보안 스캔",     targetGroup: "클라우드팀",status: "completed", progress: 100, startedAt: "2024-04-20T08:30:00Z", completedAt: "2024-04-20T10:00:00Z" },
+      { id: "job-006", title: "방화벽 정책 점검 실행",         targetGroup: "보안팀",    status: "completed", progress: 100, startedAt: "2024-05-28T09:30:00Z", completedAt: "2024-05-28T10:45:00Z" },
+      { id: "job-007", title: "3분기 종합 보안 점검 배치",     targetGroup: "전체",      ...r("job-007"), startedAt: "2024-07-05T09:00:00Z", completedAt: _runSim["job-007"] >= 100 ? "2024-07-05T12:00:00Z" : null },
+      { id: "job-008", title: "내부망 세그먼트 점검 실행",     targetGroup: "인프라팀",  ...r("job-008"), startedAt: "2024-07-10T10:00:00Z", completedAt: _runSim["job-008"] >= 100 ? "2024-07-10T13:00:00Z" : null },
+      { id: "job-009", title: "결제 시스템 보안 스캔",         targetGroup: "서비스팀",  ...r("job-009"), startedAt: "2024-07-15T11:00:00Z", completedAt: _runSim["job-009"] >= 100 ? "2024-07-15T14:00:00Z" : null },
+      { id: "job-010", title: "소스코드 취약점 정적 분석",     targetGroup: "개발1팀",   ...r("job-010"), startedAt: "2024-07-18T14:00:00Z", completedAt: _runSim["job-010"] >= 100 ? "2024-07-18T17:00:00Z" : null },
+      { id: "job-011", title: "VPN 게이트웨이 보안 점검",      targetGroup: "네트워크팀",status: "scheduled", progress: 0,   startedAt: null, completedAt: null },
+      { id: "job-012", title: "메일 서버 보안 스캔",           targetGroup: "IT인프라팀",status: "scheduled", progress: 0,   startedAt: null, completedAt: null },
+      { id: "job-013", title: "HR 시스템 취약점 스캔",         targetGroup: "HR팀",      status: "scheduled", progress: 0,   startedAt: null, completedAt: null },
+      { id: "job-014", title: "컨테이너 이미지 취약점 스캔",   targetGroup: "클라우드팀",status: "scheduled", progress: 0,   startedAt: null, completedAt: null },
+      { id: "job-015", title: "CRM 시스템 취약점 스캔",        targetGroup: "영업팀",    status: "failed",    progress: 35,  startedAt: "2024-06-20T09:00:00Z", completedAt: null },
+      { id: "job-016", title: "OT 시스템 보안 점검 배치",      targetGroup: "제조팀",    status: "failed",    progress: 12,  startedAt: "2024-06-25T10:00:00Z", completedAt: null },
+    ];
+    return HttpResponse.json({ items, total: items.length });
   }),
 
   http.get("/api/execution-jobs/:id", async ({ params }) => {
@@ -551,7 +646,7 @@ export const handlers = [
   http.post("/api/execution-jobs", async ({ request }) => {
     await delay(MOCK_DELAY);
     const body = await request.json().catch(() => ({}));
-    return HttpResponse.json({ id: `job-${Date.now()}`, ...body, status: "pending", progress: 0 });
+    return HttpResponse.json({ id: `job-${Date.now()}`, ...body, status: "scheduled", progress: 0 });
   }),
 
   http.patch("/api/execution-jobs/:id/status", async ({ params, request }) => {
@@ -562,19 +657,104 @@ export const handlers = [
 
   http.get("/api/network-segments", async () => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({
-      items: [
-        { id: "seg-001", name: "DMZ 구간", cidr: "192.168.1.0/24", status: "active" },
-        { id: "seg-002", name: "내부망", cidr: "10.0.0.0/24", status: "active" },
-        { id: "seg-003", name: "관리망", cidr: "172.16.0.0/24", status: "inactive" },
-      ],
-      total: 3,
-    });
+    const items = [
+      {
+        id: "seg-001", name: "DMZ", nameKo: "비무장지대 (DMZ) 구간",
+        cidr: "10.10.1.0/24", ipRange: "10.10.1.1 ~ 10.10.1.254",
+        assetCount: 12, status: "active", riskLevel: "high", riskScore: 78,
+        vulnerabilityCount: 14, openPortCount: 23,
+        lastInspectedAt: "2024-07-10T10:00:00Z",
+        description: "외부 인터넷과 내부망 사이에 위치한 비무장지대 구간. 웹 서버, 메일 서버 등 외부 서비스 자산이 위치합니다.",
+        tags: ["외부노출", "웹서버", "이메일"],
+      },
+      {
+        id: "seg-002", name: "Internal-LAN", nameKo: "업무 내부망",
+        cidr: "10.10.2.0/24", ipRange: "10.10.2.1 ~ 10.10.2.254",
+        assetCount: 48, status: "active", riskLevel: "medium", riskScore: 42,
+        vulnerabilityCount: 6, openPortCount: 8,
+        lastInspectedAt: "2024-07-12T09:00:00Z",
+        description: "일반 업무 사용자 PC 및 그룹웨어 서버가 위치하는 내부 업무망 구간입니다.",
+        tags: ["업무PC", "그룹웨어", "내부망"],
+      },
+      {
+        id: "seg-003", name: "Management", nameKo: "서버 관리망",
+        cidr: "172.16.1.0/24", ipRange: "172.16.1.1 ~ 172.16.1.254",
+        assetCount: 8, status: "active", riskLevel: "medium", riskScore: 38,
+        vulnerabilityCount: 3, openPortCount: 6,
+        lastInspectedAt: "2024-07-08T11:00:00Z",
+        description: "서버 원격 관리를 위한 전용 관리망. 점프서버를 통한 접근만 허용됩니다.",
+        tags: ["관리망", "점프서버", "SSH"],
+      },
+      {
+        id: "seg-004", name: "DB-Network", nameKo: "데이터베이스 전용망",
+        cidr: "172.16.2.0/24", ipRange: "172.16.2.1 ~ 172.16.2.254",
+        assetCount: 6, status: "active", riskLevel: "high", riskScore: 65,
+        vulnerabilityCount: 9, openPortCount: 4,
+        lastInspectedAt: "2024-07-11T14:00:00Z",
+        description: "데이터베이스 서버 전용 격리망. 애플리케이션 서버에서만 접근 가능합니다.",
+        tags: ["DB서버", "격리망", "MySQL", "Oracle"],
+      },
+      {
+        id: "seg-005", name: "Cloud-VPC", nameKo: "클라우드 VPC",
+        cidr: "192.168.10.0/24", ipRange: "192.168.10.1 ~ 192.168.10.254",
+        assetCount: 21, status: "active", riskLevel: "low", riskScore: 22,
+        vulnerabilityCount: 2, openPortCount: 5,
+        lastInspectedAt: "2024-07-09T16:00:00Z",
+        description: "퍼블릭 클라우드 환경의 가상 사설 클라우드 구간. 자동화된 보안 그룹 정책이 적용됩니다.",
+        tags: ["클라우드", "VPC", "자동화"],
+      },
+      {
+        id: "seg-006", name: "Dev-Network", nameKo: "개발 전용망",
+        cidr: "192.168.20.0/24", ipRange: "192.168.20.1 ~ 192.168.20.254",
+        assetCount: 15, status: "active", riskLevel: "medium", riskScore: 51,
+        vulnerabilityCount: 7, openPortCount: 12,
+        lastInspectedAt: "2024-07-05T10:00:00Z",
+        description: "개발 및 테스트 서버가 위치한 개발 전용망. 운영망과 물리적으로 분리되어 있습니다.",
+        tags: ["개발", "테스트", "CI/CD"],
+      },
+      {
+        id: "seg-007", name: "Backup-Net", nameKo: "백업 전용망",
+        cidr: "172.16.3.0/24", ipRange: "172.16.3.1 ~ 172.16.3.254",
+        assetCount: 4, status: "active", riskLevel: "low", riskScore: 18,
+        vulnerabilityCount: 1, openPortCount: 3,
+        lastInspectedAt: "2024-07-03T09:00:00Z",
+        description: "데이터 백업 서버 및 스토리지 전용망. 백업 작업 시간대에만 트래픽이 허용됩니다.",
+        tags: ["백업", "스토리지"],
+      },
+      {
+        id: "seg-008", name: "Wireless", nameKo: "무선 네트워크",
+        cidr: "192.168.30.0/24", ipRange: "192.168.30.1 ~ 192.168.30.254",
+        assetCount: 35, status: "active", riskLevel: "medium", riskScore: 55,
+        vulnerabilityCount: 5, openPortCount: 9,
+        lastInspectedAt: "2024-06-28T15:00:00Z",
+        description: "임직원 모바일 기기 및 BYOD 장비 접속을 위한 무선 네트워크 구간입니다.",
+        tags: ["무선", "BYOD", "모바일"],
+      },
+      {
+        id: "seg-009", name: "Guest-WiFi", nameKo: "게스트 무선망",
+        cidr: "192.168.40.0/24", ipRange: "192.168.40.1 ~ 192.168.40.254",
+        assetCount: 0, status: "active", riskLevel: "low", riskScore: 15,
+        vulnerabilityCount: 0, openPortCount: 2,
+        lastInspectedAt: "2024-06-20T12:00:00Z",
+        description: "방문객 및 외부인 인터넷 접속 전용 게스트 무선망. 내부망 접근 완전 차단.",
+        tags: ["게스트", "외부인", "인터넷전용"],
+      },
+      {
+        id: "seg-010", name: "OT-Network", nameKo: "OT/ICS 운영 기술망",
+        cidr: "10.10.3.0/24", ipRange: "10.10.3.1 ~ 10.10.3.254",
+        assetCount: 9, status: "inactive", riskLevel: "high", riskScore: 82,
+        vulnerabilityCount: 11, openPortCount: 16,
+        lastInspectedAt: "2024-06-15T10:00:00Z",
+        description: "제조 설비 및 산업 제어 시스템이 연결된 OT/ICS 망. 현재 점검 중으로 일시 비활성 상태입니다.",
+        tags: ["OT", "ICS", "제조", "비활성"],
+      },
+    ];
+    return HttpResponse.json({ items, total: items.length });
   }),
 
   http.get("/api/network-segments/:id", async ({ params }) => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({ id: params.id, name: "세그먼트 상세", cidr: "10.0.0.0/24", status: "active" });
+    return HttpResponse.json({ id: params.id, name: "Internal-LAN", nameKo: "업무 내부망", cidr: "10.10.2.0/24", status: "active" });
   }),
 
   http.patch("/api/network-segments/:id", async ({ params, request }) => {
@@ -583,9 +763,58 @@ export const handlers = [
     return HttpResponse.json({ id: params.id, ...body });
   }),
 
+  http.get("/api/network-connections", async () => {
+    await delay(MOCK_DELAY);
+    // 망간 연결 관계 — src/dst: 세그먼트 name (영문 ID), counts: { allow, block, total }
+    const items = [
+      { src: "DMZ",         dst: "Internal-LAN", counts: { allow: 8,  block: 2,  total: 10 }, hasAlert: false },
+      { src: "Internal-LAN", dst: "DMZ",         counts: { allow: 3,  block: 7,  total: 10 }, hasAlert: false },
+      { src: "Internal-LAN", dst: "DB-Network",  counts: { allow: 10, block: 0,  total: 10 }, hasAlert: false },
+      { src: "DB-Network",  dst: "Internal-LAN", counts: { allow: 10, block: 0,  total: 10 }, hasAlert: false },
+      { src: "DMZ",         dst: "Cloud-VPC",    counts: { allow: 5,  block: 5,  total: 10 }, hasAlert: true  },
+      { src: "Cloud-VPC",   dst: "DMZ",          counts: { allow: 2,  block: 8,  total: 10 }, hasAlert: true  },
+      { src: "Internal-LAN", dst: "Dev-Network", counts: { allow: 10, block: 0,  total: 10 }, hasAlert: false },
+      { src: "Dev-Network", dst: "Internal-LAN", counts: { allow: 10, block: 0,  total: 10 }, hasAlert: false },
+      { src: "Dev-Network", dst: "DB-Network",   counts: { allow: 6,  block: 4,  total: 10 }, hasAlert: false },
+      { src: "Management",  dst: "Internal-LAN", counts: { allow: 10, block: 0,  total: 10 }, hasAlert: false },
+      { src: "Management",  dst: "DMZ",          counts: { allow: 10, block: 0,  total: 10 }, hasAlert: false },
+      { src: "Management",  dst: "DB-Network",   counts: { allow: 8,  block: 2,  total: 10 }, hasAlert: false },
+      { src: "OT-Network",  dst: "Management",   counts: { allow: 0,  block: 10, total: 10 }, hasAlert: false },
+      { src: "Cloud-VPC",   dst: "Internal-LAN", counts: { allow: 4,  block: 6,  total: 10 }, hasAlert: false },
+      { src: "Internal-LAN", dst: "Cloud-VPC",   counts: { allow: 7,  block: 3,  total: 10 }, hasAlert: false },
+    ];
+    return HttpResponse.json({ items });
+  }),
+
   http.get("/api/inspection-results", async () => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({ items: [], total: 0 });
+    const items = [
+      { id: "res-001", planTitle: "1분기 서버 정기 보안 점검", targetGroup: "IT인프라팀", score: 82, reviewStatus: "approved", reviewedAt: "2024-03-18", reviewer: "김보안", comment: "취약점 14건 모두 조치 확인" },
+      { id: "res-002", planTitle: "개발 환경 취약점 스캔", targetGroup: "개발1팀", score: 71, reviewStatus: "approved", reviewedAt: "2024-03-25", reviewer: "이담당", comment: "패치 적용 완료, 재점검 권고" },
+      { id: "res-003", planTitle: "DMZ 구간 네트워크 보안 점검", targetGroup: "인프라팀", score: 88, reviewStatus: "approved", reviewedAt: "2024-04-08", reviewer: "박관리", comment: "우수한 보안 상태 유지" },
+      { id: "res-004", planTitle: "데이터베이스 접근 제어 점검", targetGroup: "DB팀", score: 76, reviewStatus: "approved", reviewedAt: "2024-04-14", reviewer: "최담당", comment: "계정 관리 정책 개선 필요" },
+      { id: "res-005", planTitle: "클라우드 인프라 보안 점검", targetGroup: "클라우드팀", score: 91, reviewStatus: "approved", reviewedAt: "2024-04-23", reviewer: "정보안", comment: "보안 그룹 정책 최적화 확인" },
+      { id: "res-006", planTitle: "ERP 시스템 취약점 점검", targetGroup: "ERP팀", score: 68, reviewStatus: "approved", reviewedAt: "2024-04-30", reviewer: "한담당", comment: "ERP 계정 권한 재검토 필요" },
+      { id: "res-007", planTitle: "2분기 서버 정기 보안 점검", targetGroup: "IT인프라팀", score: 85, reviewStatus: "approved", reviewedAt: "2024-05-14", reviewer: "김보안", comment: "불필요 서비스 2건 비활성화 완료" },
+      { id: "res-008", planTitle: "무선 네트워크 보안 점검", targetGroup: "네트워크팀", score: 79, reviewStatus: "approved", reviewedAt: "2024-05-19", reviewer: "이담당", comment: "WPA3 전환 권고 사항 등록" },
+      { id: "res-009", planTitle: "업무 PC 취약점 점검", targetGroup: "IT지원팀", score: 74, reviewStatus: "approved", reviewedAt: "2024-05-23", reviewer: "박관리", comment: "OS 업데이트 일괄 배포 완료" },
+      { id: "res-010", planTitle: "방화벽 정책 보안 점검", targetGroup: "보안팀", score: 93, reviewStatus: "approved", reviewedAt: "2024-06-01", reviewer: "최담당", comment: "정책 최적화로 보안 강화 확인" },
+      { id: "res-011", planTitle: "API 서버 보안 취약점 점검", targetGroup: "개발2팀", score: 67, reviewStatus: "in_review", reviewedAt: "2024-06-10", reviewer: "정보안", comment: null },
+      { id: "res-012", planTitle: "재해복구 시스템 점검", targetGroup: "IT인프라팀", score: 87, reviewStatus: "in_review", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-013", planTitle: "소스코드 취약점 점검 (1차)", targetGroup: "개발1팀", score: 72, reviewStatus: "in_review", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-014", planTitle: "VPN 접근 제어 점검", targetGroup: "네트워크팀", score: 81, reviewStatus: "in_review", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-015", planTitle: "메일 서버 보안 점검", targetGroup: "IT인프라팀", score: 76, reviewStatus: "in_review", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-016", planTitle: "HR 시스템 취약점 점검", targetGroup: "HR팀", score: 83, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-017", planTitle: "컨테이너 보안 취약점 점검", targetGroup: "클라우드팀", score: 89, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-018", planTitle: "외부망 노출 서비스 점검", targetGroup: "인프라팀", score: 64, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-019", planTitle: "CRM 데이터 접근 점검", targetGroup: "영업팀", score: 70, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-020", planTitle: "결제 시스템 보안 점검 (1차)", targetGroup: "서비스팀", score: 77, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-021", planTitle: "백업 시스템 무결성 점검", targetGroup: "IT인프라팀", score: 92, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-022", planTitle: "DB 암호화 정책 점검", targetGroup: "DB팀", score: 85, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-023", planTitle: "침입 탐지 시스템 점검", targetGroup: "보안팀", score: 88, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+      { id: "res-024", planTitle: "클라우드 IAM 정책 점검", targetGroup: "클라우드팀", score: 90, reviewStatus: "pending", reviewedAt: null, reviewer: null, comment: null },
+    ];
+    return HttpResponse.json({ items, total: items.length });
   }),
 
   http.patch("/api/inspection-results/:id", async ({ params, request }) => {
@@ -596,8 +825,54 @@ export const handlers = [
 
   http.get("/api/assets", async () => {
     await delay(MOCK_DELAY);
-    return HttpResponse.json({ items: [], totalCount: 0 });
+    if (_testErrorFlags.has("assets")) return new HttpResponse(null, { status: 500 });
+    const items = [
+      { id: "ast-001", name: "web-server-01", ipAddress: "10.10.1.10", type: "server", os: "Ubuntu 22.04", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-10" },
+      { id: "ast-002", name: "web-server-02", ipAddress: "10.10.1.11", type: "server", os: "Ubuntu 22.04", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-10" },
+      { id: "ast-003", name: "mail-server-01", ipAddress: "10.10.1.20", type: "server", os: "CentOS 7.9", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-08" },
+      { id: "ast-004", name: "db-primary-01", ipAddress: "172.16.2.10", type: "db_server", os: "RHEL 8.6", location: "IDC-B 서버실", status: "active", lastScannedAt: "2024-07-11" },
+      { id: "ast-005", name: "db-replica-01", ipAddress: "172.16.2.11", type: "db_server", os: "RHEL 8.6", location: "IDC-B 서버실", status: "active", lastScannedAt: "2024-07-11" },
+      { id: "ast-006", name: "db-replica-02", ipAddress: "172.16.2.12", type: "db_server", os: "RHEL 8.6", location: "IDC-B 서버실", status: "active", lastScannedAt: "2024-07-09" },
+      { id: "ast-007", name: "app-server-01", ipAddress: "10.10.2.10", type: "server", os: "Ubuntu 20.04", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-12" },
+      { id: "ast-008", name: "app-server-02", ipAddress: "10.10.2.11", type: "server", os: "Ubuntu 20.04", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-12" },
+      { id: "ast-009", name: "batch-server-01", ipAddress: "10.10.2.20", type: "server", os: "CentOS 8.4", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-07" },
+      { id: "ast-010", name: "firewall-core", ipAddress: "172.16.1.1", type: "network_device", os: "FortiOS 7.2", location: "네트워크실", status: "active", lastScannedAt: "2024-07-05" },
+      { id: "ast-011", name: "switch-core-01", ipAddress: "172.16.1.10", type: "network_device", os: "Cisco IOS 15.2", location: "네트워크실", status: "active", lastScannedAt: "2024-07-05" },
+      { id: "ast-012", name: "switch-access-01", ipAddress: "172.16.1.20", type: "network_device", os: "Cisco IOS 15.2", location: "네트워크실", status: "active", lastScannedAt: "2024-07-05" },
+      { id: "ast-013", name: "cloud-api-gw-01", ipAddress: "192.168.10.10", type: "cloud_instance", os: "Amazon Linux 2023", location: "AWS ap-northeast-2", status: "active", lastScannedAt: "2024-07-09" },
+      { id: "ast-014", name: "cloud-was-01", ipAddress: "192.168.10.20", type: "cloud_instance", os: "Ubuntu 22.04", location: "AWS ap-northeast-2", status: "active", lastScannedAt: "2024-07-09" },
+      { id: "ast-015", name: "cloud-was-02", ipAddress: "192.168.10.21", type: "cloud_instance", os: "Ubuntu 22.04", location: "AWS ap-northeast-2", status: "active", lastScannedAt: "2024-07-09" },
+      { id: "ast-016", name: "cloud-cache-01", ipAddress: "192.168.10.30", type: "cloud_instance", os: "Amazon Linux 2023", location: "AWS ap-northeast-2", status: "active", lastScannedAt: "2024-07-08" },
+      { id: "ast-017", name: "dev-server-01", ipAddress: "192.168.20.10", type: "server", os: "Ubuntu 22.04", location: "개발환경", status: "active", lastScannedAt: "2024-07-05" },
+      { id: "ast-018", name: "dev-server-02", ipAddress: "192.168.20.11", type: "server", os: "Ubuntu 22.04", location: "개발환경", status: "active", lastScannedAt: "2024-07-05" },
+      { id: "ast-019", name: "ci-runner-01", ipAddress: "192.168.20.20", type: "server", os: "Ubuntu 20.04", location: "개발환경", status: "active", lastScannedAt: "2024-07-04" },
+      { id: "ast-020", name: "backup-nas-01", ipAddress: "172.16.3.10", type: "server", os: "TrueNAS 13.0", location: "IDC-B 서버실", status: "active", lastScannedAt: "2024-07-03" },
+      { id: "ast-021", name: "jump-server-01", ipAddress: "172.16.1.100", type: "server", os: "Ubuntu 22.04", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-12" },
+      { id: "ast-022", name: "monitor-server-01", ipAddress: "172.16.1.110", type: "server", os: "CentOS 8.4", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-06" },
+      { id: "ast-023", name: "log-server-01", ipAddress: "10.10.2.50", type: "server", os: "Ubuntu 20.04", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-07-06" },
+      { id: "ast-024", name: "vpn-gateway-01", ipAddress: "10.10.1.5", type: "network_device", os: "Cisco ASA 9.14", location: "네트워크실", status: "active", lastScannedAt: "2024-06-28" },
+      { id: "ast-025", name: "ids-sensor-01", ipAddress: "172.16.1.30", type: "network_device", os: "Snort 3.0", location: "네트워크실", status: "active", lastScannedAt: "2024-06-25" },
+      { id: "ast-026", name: "erp-app-01", ipAddress: "10.10.2.30", type: "server", os: "Windows Server 2019", location: "IDC-A 서버실", status: "active", lastScannedAt: "2024-06-20" },
+      { id: "ast-027", name: "erp-db-01", ipAddress: "172.16.2.20", type: "db_server", os: "Windows Server 2019", location: "IDC-B 서버실", status: "active", lastScannedAt: "2024-06-20" },
+      { id: "ast-028", name: "cloud-rds-01", ipAddress: "192.168.10.40", type: "cloud_instance", os: "Amazon RDS MySQL 8.0", location: "AWS ap-northeast-2", status: "active", lastScannedAt: "2024-07-08" },
+      { id: "ast-029", name: "ot-controller-01", ipAddress: "10.10.3.10", type: "server", os: "Windows 10 IoT", location: "제조동 제어실", status: "inactive", lastScannedAt: "2024-06-15" },
+      { id: "ast-030", name: "ot-plc-01", ipAddress: "10.10.3.20", type: "network_device", os: "Siemens S7", location: "제조동 제어실", status: "inactive", lastScannedAt: "2024-06-15" },
+      { id: "ast-031", name: "old-web-server-01", ipAddress: "10.10.1.50", type: "server", os: "CentOS 6.10", location: "IDC-A 서버실", status: "inactive", lastScannedAt: "2024-05-01" },
+      { id: "ast-032", name: "legacy-db-01", ipAddress: "172.16.2.50", type: "db_server", os: "Oracle Linux 7", location: "IDC-B 서버실", status: "inactive", lastScannedAt: "2024-05-15" },
+      { id: "ast-033", name: "dev-pc-lead", ipAddress: "192.168.20.100", type: "pc", os: "macOS 14.3", location: "개발팀 사무실", status: "active", lastScannedAt: "2024-07-01" },
+      { id: "ast-034", name: "admin-workstation-01", ipAddress: "10.10.2.200", type: "pc", os: "Windows 11 Pro", location: "보안팀 사무실", status: "active", lastScannedAt: "2024-07-01" },
+      { id: "ast-035", name: "cloud-lambda-01", ipAddress: "192.168.10.50", type: "cloud_instance", os: "AWS Lambda (Node.js 20)", location: "AWS ap-northeast-2", status: "active", lastScannedAt: "2024-07-09" },
+    ];
+    return HttpResponse.json({ items, total: items.length });
   }),
 
-  // ???????????????????? Fallback passthrough ????????????????????
+  // e2e 테스트 전용 — 에러 플래그 설정/초기화 (개발 모드에서만 유효)
+  http.post("/__test/error-flags", async ({ request }) => {
+    const body = await request.json();
+    if (body.clear) _testErrorFlags.clear();
+    if (Array.isArray(body.set)) body.set.forEach((f) => _testErrorFlags.add(f));
+    return HttpResponse.json({ flags: [..._testErrorFlags] });
+  }),
+
+  // Fallback passthrough
 ];

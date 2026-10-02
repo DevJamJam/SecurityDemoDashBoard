@@ -1,22 +1,44 @@
 import { useEffect, useState } from "react";
 import { FiEdit2, FiSave, FiX, FiAlertTriangle, FiShield, FiWifi } from "react-icons/fi";
+import { TbTopologyStar3 } from "react-icons/tb";
+import { BsCardList } from "react-icons/bs";
 import Swal from "sweetalert2";
+import axios from "axios";
 import useNetworkSegmentStore from "@/store/useNetworkSegmentStore";
 import PageHeader from "@/components/layout/PageHeader";
 import StatusBadge from "@/components/common/StatusBadge";
 import Button from "@/components/common/Button";
+import NetworkTopologyMap from "@/components/network/NetworkTopologyMap";
+import NetworkConnectionMatrix from "@/components/network/NetworkConnectionMatrix";
 
 const RISK_LABEL = { low: "낮음", medium: "보통", high: "높음" };
 const RISK_COLOR = { low: "var(--success-color)", medium: "var(--warning-color)", high: "var(--danger-color)" };
 
+const TABS = [
+  { id: "topology", label: "망 연결도",   icon: <TbTopologyStar3 /> },
+  { id: "matrix",   label: "통신 매트릭스", icon: <span style={{ fontWeight: 700, fontSize: 14 }}>⊞</span> },
+  { id: "cards",    label: "세그먼트 목록", icon: <BsCardList /> },
+];
+
 export default function NetworkSegments() {
   const { segments, loading, fetchSegments, updateSegment } = useNetworkSegmentStore();
+  const [activeTab, setActiveTab] = useState("topology");
+  const [connections, setConnections] = useState([]);
+  const [connLoading, setConnLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
   useEffect(() => {
     fetchSegments();
   }, [fetchSegments]);
+
+  useEffect(() => {
+    setConnLoading(true);
+    axios.get("/api/network-connections")
+      .then((res) => setConnections(res.data?.items || []))
+      .catch(() => setConnections([]))
+      .finally(() => setConnLoading(false));
+  }, []);
 
   const startEdit = (seg) => {
     setEditingId(seg.id);
@@ -36,7 +58,7 @@ export default function NetworkSegments() {
       showCancelButton: true,
       confirmButtonText: "저장",
       cancelButtonText: "취소",
-      confirmButtonColor: "#14b8a6",
+      confirmButtonColor: "#0891b2",
     });
     if (!result.isConfirmed) return;
 
@@ -46,7 +68,9 @@ export default function NetworkSegments() {
     Swal.fire({ title: "저장 완료", icon: "success", timer: 1200, showConfirmButton: false });
   };
 
-  if (loading) {
+  const isPageLoading = loading || connLoading;
+
+  if (isPageLoading) {
     return (
       <div className="page-content">
         <div className="loading-state">
@@ -60,136 +84,153 @@ export default function NetworkSegments() {
   return (
     <div className="page-content">
       <PageHeader
-        breadcrumb="인프라 관리"
-        title="Network Segments"
-        description="네트워크 세그먼트 현황 · 위험도 · 취약점 현황 관리"
+        title="네트워크 세그먼트"
+        description="망간 연결 관계 시각화 · 세그먼트별 위험도 · 취약점 현황 관리"
       />
 
-      <div className="segment-list">
-        {segments.map((seg) => {
-          const isEditing = editingId === seg.id;
-          const riskColor = RISK_COLOR[seg.riskLevel] || "var(--sub-text-color)";
+      {/* 탭 헤더 */}
+      <div className="seg-tabs">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            className={`seg-tabs__tab${activeTab === t.id ? " is-active" : ""}`}
+            onClick={() => setActiveTab(t.id)}
+          >
+            {t.icon}
+            {t.label}
+          </button>
+        ))}
+        <div className="seg-tabs__spacer" />
+        <span className="seg-tabs__count">전체 {segments.length}개 세그먼트 · 연결 {connections.length}건</span>
+      </div>
 
-          return (
-            <div key={seg.id} className={`card segment-card${isEditing ? " editing" : ""}`}>
-              <div className="segment-card__header">
-                <div className="segment-card__info">
-                  <span className="segment-card__id">{seg.id}</span>
-                  <h3 className="segment-card__name">{seg.nameKo || seg.name}</h3>
-                  <p className="segment-card__name-en">{seg.name}</p>
+      {/* 망 연결도 탭 */}
+      {activeTab === "topology" && (
+        <NetworkTopologyMap segments={segments} connections={connections} />
+      )}
+
+      {/* 통신 매트릭스 탭 */}
+      {activeTab === "matrix" && (
+        <NetworkConnectionMatrix segments={segments} connections={connections} />
+      )}
+
+      {/* 세그먼트 목록 탭 */}
+      {activeTab === "cards" && (
+        <div className="segment-list">
+          {segments.map((seg) => {
+            const isEditing = editingId === seg.id;
+            const riskColor = RISK_COLOR[seg.riskLevel] || "var(--sub-text-color)";
+
+            return (
+              <div key={seg.id} className={`card segment-card${isEditing ? " editing" : ""}`}>
+                <div className="segment-card__header">
+                  <div className="segment-card__info">
+                    <span className="segment-card__id">{seg.id}</span>
+                    <h3 className="segment-card__name">{seg.nameKo || seg.name}</h3>
+                    <p className="segment-card__name-en">{seg.name}</p>
+                  </div>
+                  <div className="segment-card__header-actions">
+                    {isEditing ? (
+                      <>
+                        <Button variant="accent" size="sm" icon={<FiSave />} onClick={() => handleSave(seg)}>저장</Button>
+                        <Button variant="ghost" size="sm" icon={<FiX />} onClick={cancelEdit}>취소</Button>
+                      </>
+                    ) : (
+                      <Button variant="outline" size="sm" icon={<FiEdit2 />} onClick={() => startEdit(seg)}>편집</Button>
+                    )}
+                  </div>
                 </div>
-                <div className="segment-card__header-actions">
+
+                <div className="segment-card__risk-bar">
+                  <div
+                    className="segment-card__risk-badge"
+                    style={{ background: `${riskColor}1a`, color: riskColor, borderColor: riskColor }}
+                  >
+                    <FiAlertTriangle />
+                    위험도 {RISK_LABEL[seg.riskLevel] || seg.riskLevel} ({seg.riskScore}점)
+                  </div>
+                  <StatusBadge status={isEditing ? editForm.status : seg.status} />
+                </div>
+
+                <dl className="segment-card__meta">
+                  <div><dt>CIDR</dt><dd><code>{seg.cidr}</code></dd></div>
+                  <div><dt>IP 범위</dt><dd><code style={{ fontSize: "var(--font-10)" }}>{seg.ipRange}</code></dd></div>
+                  <div>
+                    <dt>자산 수</dt>
+                    <dd>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <FiWifi style={{ color: "var(--accent-color)" }} />
+                        {seg.assetCount}개
+                      </span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>상태</dt>
+                    <dd>
+                      {isEditing ? (
+                        <select
+                          className="search-menu__select"
+                          value={editForm.status}
+                          onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
+                        >
+                          <option value="active">활성</option>
+                          <option value="inactive">비활성</option>
+                        </select>
+                      ) : (
+                        <StatusBadge status={seg.status} />
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="segment-card__vuln-row">
+                  <div className="segment-card__vuln-item">
+                    <FiAlertTriangle color="var(--danger-color)" />
+                    <span>취약점 <strong>{seg.vulnerabilityCount}</strong>건</span>
+                  </div>
+                  <div className="segment-card__vuln-item">
+                    <FiShield color="var(--warning-color)" />
+                    <span>오픈 포트 <strong>{seg.openPortCount}</strong>개</span>
+                  </div>
+                  <div className="segment-card__vuln-item">
+                    <span style={{ fontSize: "var(--font-10)", color: "var(--sub-text-color)" }}>
+                      최근 점검: {seg.lastInspectedAt ? seg.lastInspectedAt.split("T")[0] : "-"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="segment-card__desc">
+                  <dt>설명</dt>
                   {isEditing ? (
-                    <>
-                      <Button variant="accent" size="sm" icon={<FiSave />} onClick={() => handleSave(seg)}>
-                        저장
-                      </Button>
-                      <Button variant="ghost" size="sm" icon={<FiX />} onClick={cancelEdit}>
-                        취소
-                      </Button>
-                    </>
+                    <textarea
+                      className="segment-card__textarea"
+                      value={editForm.description}
+                      rows={2}
+                      onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                    />
                   ) : (
-                    <Button variant="outline" size="sm" icon={<FiEdit2 />} onClick={() => startEdit(seg)}>
-                      편집
-                    </Button>
+                    <dd>{seg.description || "-"}</dd>
                   )}
                 </div>
-              </div>
 
-              <div className="segment-card__risk-bar">
-                <div
-                  className="segment-card__risk-badge"
-                  style={{ background: `${riskColor}1a`, color: riskColor, borderColor: riskColor }}
-                >
-                  <FiAlertTriangle />
-                  위험도 {RISK_LABEL[seg.riskLevel] || seg.riskLevel} ({seg.riskScore}점)
-                </div>
-                <StatusBadge status={isEditing ? editForm.status : seg.status} />
-              </div>
-
-              <dl className="segment-card__meta">
-                <div>
-                  <dt>CIDR</dt>
-                  <dd><code>{seg.cidr}</code></dd>
-                </div>
-                <div>
-                  <dt>IP 범위</dt>
-                  <dd><code style={{ fontSize: "var(--font-10)" }}>{seg.ipRange}</code></dd>
-                </div>
-                <div>
-                  <dt>자산 수</dt>
-                  <dd>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <FiWifi style={{ color: "var(--accent-color)" }} />
-                      {seg.assetCount}개
-                    </span>
-                  </dd>
-                </div>
-                <div>
-                  <dt>상태</dt>
-                  <dd>
-                    {isEditing ? (
-                      <select
-                        className="search-menu__select"
-                        value={editForm.status}
-                        onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
-                      >
-                        <option value="active">활성</option>
-                        <option value="inactive">비활성</option>
-                      </select>
-                    ) : (
-                      <StatusBadge status={seg.status} />
-                    )}
-                  </dd>
-                </div>
-              </dl>
-
-              <div className="segment-card__vuln-row">
-                <div className="segment-card__vuln-item">
-                  <FiAlertTriangle color="var(--danger-color)" />
-                  <span>취약점 <strong>{seg.vulnerabilityCount}</strong>건</span>
-                </div>
-                <div className="segment-card__vuln-item">
-                  <FiShield color="var(--warning-color)" />
-                  <span>오픈 포트 <strong>{seg.openPortCount}</strong>개</span>
-                </div>
-                <div className="segment-card__vuln-item">
-                  <span style={{ fontSize: "var(--font-10)", color: "var(--sub-text-color)" }}>
-                    최근 점검: {seg.lastInspectedAt ? seg.lastInspectedAt.split("T")[0] : "-"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="segment-card__desc">
-                <dt>설명</dt>
-                {isEditing ? (
-                  <textarea
-                    className="segment-card__textarea"
-                    value={editForm.description}
-                    rows={2}
-                    onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
-                  />
-                ) : (
-                  <dd>{seg.description || "-"}</dd>
+                {seg.tags && seg.tags.length > 0 && (
+                  <div className="segment-card__tags">
+                    {seg.tags.map((tag) => (
+                      <span key={tag} className="segment-card__tag">#{tag}</span>
+                    ))}
+                  </div>
                 )}
               </div>
-
-              {seg.tags && seg.tags.length > 0 && (
-                <div className="segment-card__tags">
-                  {seg.tags.map((tag) => (
-                    <span key={tag} className="segment-card__tag">#{tag}</span>
-                  ))}
-                </div>
-              )}
+            );
+          })}
+          {segments.length === 0 && (
+            <div className="empty-state">
+              <p className="empty-state__message">네트워크 세그먼트 데이터가 없습니다.</p>
             </div>
-          );
-        })}
-        {segments.length === 0 && (
-          <div className="empty-state">
-            <p className="empty-state__message">네트워크 세그먼트 데이터가 없습니다.</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
