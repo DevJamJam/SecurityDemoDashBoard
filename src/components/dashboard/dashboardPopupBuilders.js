@@ -13,10 +13,10 @@ const resolveStepLabel = (stepKey, fallback) => (
 
 const makeAssetRows = (items = [], opts = {}) =>
   items.map((item) => ({
-    hostname: item.ast_hostname,
-    ip: item.ast_ipaddr,
-    asset_cce_uuid: item.asset_cce_uuid,
-    asset_uuid: item.asset_uuid,
+    hostname: item.name,
+    ip: item.ipAddress,
+    inspectionId: item.inspectionId,
+    assetId: item.id,
     badge: item.risk_level || item.severity || null,
     subText: item.vuln_count != null ? `취약점 ${item.vuln_count}건` : null,
     onRowClick: () => {
@@ -154,8 +154,8 @@ export const buildTrendStepAssetsModal = (code, opts = {}) => ({
   title: opts.stepKey === "redetect" ? "재탐지 자산 목록" : `${resolveStepLabel(opts.stepKey, opts.stepLabel)} 자산 목록`,
   rows: opts.stepKey === "redetect"
     ? (code?.assets || []).map((item) => ({
-        hostname: item.ast_hostname,
-        ip: item.ast_ipaddr,
+        hostname: item.name,
+        ip: item.ipAddress,
         badge: item.risk_level || item.severity || null,
         subText: item.vuln_count != null ? `취약점 ${item.vuln_count}건` : null,
         onRowClick: () => opts.onOpenRedetectVulns?.(item),
@@ -169,7 +169,7 @@ export const buildTrendStepAssetsModal = (code, opts = {}) => ({
 export const buildAssetIssuesTabs = (code = {}, opts = {}) => ({
   type: "tabs",
   eyebrow: "자산 이슈",
-  title: opts.asset?.ast_hostname || opts.asset?.name || "자산 이슈",
+  title: opts.asset?.name || "자산 이슈",
   tabs: [
     {
       label: `CCE (${code?.cce_meta?.total ?? (code?.cce_issues || []).length}건)`,
@@ -199,7 +199,7 @@ export const buildAssetIssuesTabs = (code = {}, opts = {}) => ({
 export const buildRedetectVulnListModal = (opts = {}) => ({
   type: "assetList",
   eyebrow: "재탐지",
-  title: `${opts.asset?.ast_hostname || "자산"} 재탐지 취약점`,
+  title: `${opts.asset?.name || "자산"} 재탐지 취약점`,
   rows: (opts.asset?.redetect_vulns || [
     { vuln_id: opts.vulnType === "CCE" ? "CCE-2024-0001" : "CVE-2024-1234", vuln_label: "재탐지 취약점", severity: "HIGH" },
   ]).map((item) => ({
@@ -240,8 +240,8 @@ export const buildVulnDetailModal = (code = {}, opts = {}) => ({
   eyebrow: `${opts.type} 취약점 상세`,
   title: `${opts.vulnId} - ${opts.vulnLabel || ""}`,
   rows: (code?.assets || []).map((item) => ({
-    hostname: item.ast_hostname,
-    ip: item.ast_ipaddr,
+    hostname: item.name,
+    ip: item.ipAddress,
     badge: item.risk_level || item.severity,
     subText: item.vuln_person ? `담당: ${item.vuln_person}` : null,
     onRowClick: () => opts.onAssetNavigate?.(item, opts.type, item.step_key || "planReg"),
@@ -254,8 +254,8 @@ export const buildTicketsByStatusModal = (code = {}, opts = {}) => ({
   eyebrow: "처리상태",
   title: `${opts.statusLabel} 티켓 목록`,
   rows: (code?.items || []).map((item) => ({
-    hostname: item.ast_hostname,
-    ip: item.ast_ipaddr,
+    hostname: item.name,
+    ip: item.ipAddress,
     badge: item.vuln_type,
     subText: `${item.vuln_id} · ${item.step_label || item.current_step || "-"}`,
     onRowClick: () => opts.onAssetNavigate?.(item),

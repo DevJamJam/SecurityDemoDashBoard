@@ -57,9 +57,9 @@ export const getDashboardManagedAssets = async (deptId) => {
   return res;
 };
 
-export const getDashboardAssetIssues = async ({ assetUuid, type = "all" }) => {
+export const getDashboardAssetIssues = async ({ assetId, type = "all" }) => {
   const res = await sedoApi.post("/dashboard/asset-issues", {
-    asset_uuid: assetUuid,
+    asset_id: assetId,
     type,
   });
   return res;

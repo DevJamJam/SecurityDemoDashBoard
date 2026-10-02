@@ -100,11 +100,11 @@ function buildDetailFromCode(code) {
 
   const topRiskAssetRows = top_risk_assets.map((asset, index) => ({
     id: `risk-asset-${index}`,
-    asset_uuid: asset.asset_uuid,
-    name: asset.ast_hostname,
-    ip: asset.ast_ipaddr,
+    assetId: asset.id,
+    name: asset.name,
+    ip: asset.ipAddress,
     risk: asset.risk_level,
-    owner: asset.ast_operator_person || "-",
+    owner: asset.owner || "-",
     cceCount: asset.cce_count ?? 0,
     cveCount: asset.cve_count ?? 0,
     cceIssues: [],

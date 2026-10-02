@@ -13,7 +13,6 @@ import Design4MainBoard from "@/components/dashboard/Design4MainBoard";
 import AdminAlertPanel from "@/components/dashboard/AdminAlertPanel";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import AssetPendingCommandsModal from "@/components/common/asset/AssetPendingCommandsModal";
-import TopMenuActions from "@/components/main/TopMenuActions";
 import {
   buildHighRiskSummaryModal,
   buildPendingSummaryModal,
@@ -64,7 +63,13 @@ const extractCode = (res) => {
   return data.CODE;
 };
 
-function ScopeStatus({ scopeName, summary, onOpenSummaryModal }) {
+const SCOPE_NAV_LINKS = [
+  { key: "pending",   label: "결과 조회",   path: "/sedo/result-review",      state: { autoFilter: { reviewStatus: "pending" } } },
+  { key: "command",   label: "실행 모니터", path: "/sedo/execution-monitor",   state: { autoStatus: "running" } },
+  { key: "assets",    label: "자산 관리",   path: "/sedo/assets",              state: {} },
+];
+
+function ScopeStatus({ scopeName, summary, onOpenSummaryModal, onNavigate }) {
   const chips = summary
     ? [
         { key: "assets",   label: "점검 범위", value: `${summary.assetCount}대`,         tone: "neutral" },
@@ -100,7 +105,20 @@ function ScopeStatus({ scopeName, summary, onOpenSummaryModal }) {
           ))}
         </div>
       )}
-      <TopMenuActions />
+      {onNavigate && summary && (
+        <div className="admin-home-statusbar__nav">
+          {SCOPE_NAV_LINKS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              className="scope-nav-link"
+              onClick={() => onNavigate(key)}
+            >
+              {label} <span className="scope-nav-link__arrow">→</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -196,7 +214,7 @@ function AdminRoleHome() {
           dashboardDrilldown: {
             sourceType: "CCE",
             stepKey,
-            assetName: asset?.asset_name || asset?.ast_hostname,
+            assetName: asset?.name,
             scopeName: displayDetail?.name,
             ...(vulnFilter ? { vulnFilter } : {}),
           },
@@ -213,7 +231,7 @@ function AdminRoleHome() {
         dashboardDrilldown: {
           sourceType: "CVE",
           stepKey,
-          assetName: asset?.asset_name || asset?.ast_hostname,
+          assetName: asset?.name,
           scopeName: displayDetail?.name,
           ...(vulnFilter ? { vulnFilter } : {}),
         },
@@ -271,7 +289,7 @@ function AdminRoleHome() {
   };
 
   const openCommandAssetPending = (asset) => {
-    setCommandModalAsset({ asset_uuid: asset.asset_uuid, ast_hostname: asset.ast_hostname, ast_ipaddr: asset.ast_ipaddr });
+    setCommandModalAsset({ id: asset.assetId, name: asset.name, ipAddress: asset.ipAddress });
   };
 
   const openCommandFailures = () => {
@@ -291,8 +309,8 @@ function AdminRoleHome() {
         const { cce, cve } = await dashDetail.loadActiveInspections(getDeptId());
         return buildActiveInspectionsTabs(cce, cve, {
           scopeName,
-          onNavigateCce: (item) => { navigate(`/sedo/plan/detail/${item.ccp_index}`, { state: { fromDashboard: true } }); closeModal(); },
-          onNavigateCve: (item) => { navigate(`/sedo/cve/inspection-detail/${item.job_id}`, { state: { fromDashboard: true } }); closeModal(); },
+          onNavigateCce: (item) => { navigate("/sedo/inspection-plans"); closeModal(); },
+          onNavigateCve: (item) => { navigate("/sedo/execution-monitor"); closeModal(); },
         });
       },
     );
@@ -347,8 +365,8 @@ function AdminRoleHome() {
       async () => {
         const code = await dashDetail.loadRemediationHistory(
           vulnType === "CCE"
-            ? { vulnType, assetCceUuid: asset?.asset_cce_uuid, cccIndex: vulnId }
-            : { vulnType, assetUuid: asset?.asset_uuid, cveId: vulnId },
+            ? { vulnType, inspectionId: asset?.inspectionId, cccIndex: vulnId }
+            : { vulnType, assetId: asset?.assetId, cveId: vulnId },
         );
         return buildRemediationHistoryModal(code, { asset, vulnType, vulnId });
       },
@@ -367,9 +385,9 @@ function AdminRoleHome() {
 
   const openAssetIssues = (asset) => {
     openWithLoading(
-      { type: "tabs", eyebrow: "자산 이슈", title: asset?.name || asset?.ast_hostname || "자산 이슈" },
+      { type: "tabs", eyebrow: "자산 이슈", title: asset?.name || "자산 이슈" },
       async () => {
-        const res = await getDashboardAssetIssues({ assetUuid: asset?.asset_uuid, type: "all" });
+        const res = await getDashboardAssetIssues({ assetId: asset?.assetId, type: "all" });
         const code = extractCode(res);
         return buildAssetIssuesTabs(code, { asset, scopeName });
       },
@@ -417,11 +435,11 @@ function AdminRoleHome() {
           status: statusRow.key,
           statusLabel: statusRow.label,
           scopeName,
-          onAssetDetail: (ticket) => { navigate(`/sedo/asset/asset-list/asset-detail/${ticket.asset_uuid}`, { state: { asset_cce_uuid: ticket.asset_cce_uuid, fromDashboard: true } }); closeModal(); },
+          onAssetDetail: (ticket) => { navigate(`/sedo/assets/${ticket.id}`, { state: { inspectionId: ticket.inspectionId, fromDashboard: true } }); closeModal(); },
           onAssetNavigate: (ticket) => {
             const ymd = toYmd(ticket.created_at);
             const vulnFilter = { start_date: ymd, end_date: ymd, ...(ticket.vuln_type === "CCE" ? { ccc_item_no: ticket.vuln_id } : { cve_id: ticket.vuln_id }) };
-            handleAssetNavigate({ asset_uuid: ticket.asset_uuid, asset_cce_uuid: ticket.asset_cce_uuid, ast_hostname: ticket.ast_hostname, ast_ipaddr: ticket.ast_ipaddr }, ticket.vuln_type, ticket.current_step, vulnFilter);
+            handleAssetNavigate({ assetId: ticket.id, inspectionId: ticket.inspectionId, name: ticket.name, ipAddress: ticket.ipAddress }, ticket.vuln_type, ticket.current_step, vulnFilter);
           },
         });
       },
@@ -508,8 +526,8 @@ function AdminRoleHome() {
         const cveCode = extractCode(cveRes);
         return buildActiveInspectionsTabs(cceCode, cveCode, {
           scopeName: deptCtx.scopeName,
-          onNavigateCce: (item) => { navigate(`/sedo/plan/detail/${item.ccp_index}`, { state: { fromDashboard: true } }); closeModal(); },
-          onNavigateCve: (item) => { navigate(`/sedo/cve/inspection-detail/${item.job_id}`, { state: { fromDashboard: true } }); closeModal(); },
+          onNavigateCce: (item) => { navigate("/sedo/inspection-plans"); closeModal(); },
+          onNavigateCve: (item) => { navigate("/sedo/execution-monitor"); closeModal(); },
         });
       },
     );
@@ -562,6 +580,11 @@ function AdminRoleHome() {
     }
   };
 
+  const handleNavigateFromDashboard = (key) => {
+    const link = SCOPE_NAV_LINKS.find((l) => l.key === key);
+    if (link) navigate(link.path, { state: link.state });
+  };
+
   const renderLoadingState = () => (
     <section className="admin-role-home__main admin-role-home__main--design4">
       <div className="admin-role-home__loading-wrap"><LoadingSpinner /></div>
@@ -595,6 +618,7 @@ function AdminRoleHome() {
         scopeName={scopeName}
         summary={displayDetail?.summary}
         onOpenSummaryModal={handleOpenSummaryModal}
+        onNavigate={handleNavigateFromDashboard}
       />
 
       <div className="admin-role-home__body admin-role-home__body--design4">

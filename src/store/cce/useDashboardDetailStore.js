@@ -100,12 +100,12 @@ const useDashboardDetailStore = create((set, get) => ({
     throw new Error("운영 추이 자산 조회 실패");
   },
 
-  loadRemediationHistory: async ({ vulnType, assetCceUuid, cccIndex, assetUuid, cveId }) => {
+  loadRemediationHistory: async ({ vulnType, inspectionId, cccIndex, assetId, cveId }) => {
     const res = await sedoApi.post("/dashboard/remediation-history", {
       vuln_type: vulnType,
-      asset_cce_uuid: assetCceUuid,
+      inspection_id: inspectionId,
       ccc_index: cccIndex,
-      asset_uuid: assetUuid,
+      asset_id: assetId,
       cve_id: cveId,
     });
     if (res.data?.RESULT === "OK") return res.data.CODE;

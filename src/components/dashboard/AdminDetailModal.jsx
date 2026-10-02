@@ -131,8 +131,8 @@ function ModalBodyRenderer({ data, onOpenNested, onAssetClick, onClose }) {
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <strong style={{ fontSize: "13px", color: "var(--text-color)" }}>{row.hostname || row.ast_hostname || row.name}</strong>
-                  <span style={{ marginLeft: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>{row.ip || row.ast_ipaddr}</span>
+                  <strong style={{ fontSize: "13px", color: "var(--text-color)" }}>{row.hostname || row.name}</strong>
+                  <span style={{ marginLeft: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>{row.ip || row.ipAddress}</span>
                 </div>
                 {row.badge && <span style={{ padding: "2px 8px", borderRadius: "999px", fontSize: "11px", background: "var(--accent-danger-bg)", color: "var(--status-danger)" }}>{row.badge}</span>}
               </div>

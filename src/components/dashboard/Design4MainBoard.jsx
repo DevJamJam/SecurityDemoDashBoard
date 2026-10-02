@@ -64,26 +64,21 @@ function TabbedTrendBoard({ cceRows, cveRows, onOpenTrendSummary }) {
     trendRow: row,
   }));
 
-  const tabBtn = (key) => (
-    <button type="button" role="tab" aria-selected={tab === key}
-      className={`d4-tab-btn${tab === key ? " d4-tab-btn--active" : ""}`}
-      onClick={() => setTab(key)}>
-      {key}
-    </button>
-  );
-
   return (
     <section className="admin-content-card trend-table-card design4-card">
       <SectionHeader
         title="월별 점검 현황"
         desc="운영 기간 내 점검 현황을 월별로 비교합니다."
-        right={
-          <div className="d4-tab-group" role="tablist">
-            {tabBtn("CCE")}
-            {tabBtn("CVE")}
-          </div>
-        }
       />
+      <div className="d4-section-tabs" role="tablist">
+        {["CCE", "CVE"].map((key) => (
+          <button key={key} type="button" role="tab" aria-selected={tab === key}
+            className={`d4-section-tab${tab === key ? " d4-section-tab--active" : ""}`}
+            onClick={() => setTab(key)}>
+            {key}
+          </button>
+        ))}
+      </div>
       <div className="admin-trend-matrix-wrap">
         <table className="admin-trend-matrix-table">
           <thead>
@@ -367,26 +362,21 @@ function IssueTabTable({ detail, onOpenAssetIssues, onOpenVulnDetail }) {
   const riskRows = detail.design4?.topRiskAssetRows ?? [];
   const vulnRows = detail.design4?.topVulnerabilityRows ?? [];
 
-  const tabBtn = (key, label) => (
-    <button type="button" role="tab" aria-selected={tab === key}
-      className={`d4-tab-btn${tab === key ? " d4-tab-btn--active" : ""}`}
-      onClick={() => setTab(key)}>
-      {label}
-    </button>
-  );
-
   return (
     <section className="admin-content-card design4-card">
       <SectionHeader
         title="주요 이슈"
         desc="우선 확인이 필요한 자산과 취약점을 표시합니다."
-        right={
-          <div className="d4-tab-group" role="tablist">
-            {tabBtn("risk", "위험 자산")}
-            {tabBtn("vuln", "주요 취약점")}
-          </div>
-        }
       />
+      <div className="d4-section-tabs" role="tablist">
+        {[["risk", "위험 자산"], ["vuln", "주요 취약점"]].map(([key, label]) => (
+          <button key={key} type="button" role="tab" aria-selected={tab === key}
+            className={`d4-section-tab${tab === key ? " d4-section-tab--active" : ""}`}
+            onClick={() => setTab(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
       {tab === "risk" ? (
         <div className="design4-table-scroll">
           <table className="design4-data-table design4-data-table--assets">
