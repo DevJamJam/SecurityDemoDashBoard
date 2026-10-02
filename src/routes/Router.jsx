@@ -9,13 +9,16 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 const SignUp = lazy(() => import("@/pages/authLayout/SignUp"));
 const FindId = lazy(() => import("@/pages/authLayout/FindId"));
 const ResetPassword = lazy(() => import("@/pages/authLayout/ResetPassword"));
+
 const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
 const AdminRoleHome = lazy(() => import("@/pages/dashboard/AdminRoleHome"));
-const HomeRouter = lazy(() => import("@/pages/stubs/HomeRouter"));
-const HomeAssets = lazy(() => import("@/pages/stubs/HomeAssets"));
-const HomeCve = lazy(() => import("@/pages/stubs/HomeCve"));
-const HomeVulnMgmt = lazy(() => import("@/pages/stubs/HomeVulnMgmt"));
-const HomeCommand = lazy(() => import("@/pages/stubs/HomeCommand"));
+
+const InspectionPlanList = lazy(() => import("@/pages/InspectionPlanList"));
+const InspectionPlanDetail = lazy(() => import("@/pages/InspectionPlanDetail"));
+const ExecutionMonitor = lazy(() => import("@/pages/ExecutionMonitor"));
+const ResultReview = lazy(() => import("@/pages/ResultReview"));
+const AssetManagement = lazy(() => import("@/pages/AssetManagement"));
+const NetworkSegments = lazy(() => import("@/pages/NetworkSegments"));
 
 function SuspenseWrap({ children }) {
   return <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>;
@@ -41,29 +44,27 @@ export default function Router() {
           </ProtectedRoute>
         }
       >
-        {/* Dashboard */}
+        {/* 대시보드 */}
         <Route path="dashboard" element={<SuspenseWrap><Dashboard /></SuspenseWrap>}>
           <Route path="dashboard-home" element={<SuspenseWrap><AdminRoleHome /></SuspenseWrap>} />
           <Route index element={<Navigate to="dashboard-home" replace />} />
         </Route>
 
-        {/* Assets */}
-        <Route path="asset/*" element={<SuspenseWrap><HomeAssets /></SuspenseWrap>} />
+        {/* 점검 계획 */}
+        <Route path="inspection-plans" element={<SuspenseWrap><InspectionPlanList /></SuspenseWrap>} />
+        <Route path="inspection-plans/:id" element={<SuspenseWrap><InspectionPlanDetail /></SuspenseWrap>} />
 
-        {/* CCE */}
-        <Route path="plan/*" element={<SuspenseWrap><HomeRouter tab="cce" /></SuspenseWrap>} />
-        <Route path="inspect/*" element={<SuspenseWrap><HomeRouter tab="cce" /></SuspenseWrap>} />
-        <Route path="target_assets/*" element={<SuspenseWrap><HomeRouter tab="cce" /></SuspenseWrap>} />
+        {/* 실행 모니터 */}
+        <Route path="execution-monitor" element={<SuspenseWrap><ExecutionMonitor /></SuspenseWrap>} />
 
-        {/* CVE */}
-        <Route path="cve/*" element={<SuspenseWrap><HomeCve /></SuspenseWrap>} />
+        {/* 결과 조회 */}
+        <Route path="result-review" element={<SuspenseWrap><ResultReview /></SuspenseWrap>} />
 
-        {/* VulnMgmt */}
-        <Route path="vuln-mgmt/*" element={<SuspenseWrap><HomeVulnMgmt /></SuspenseWrap>} />
-        <Route path="vuln-track/*" element={<SuspenseWrap><HomeVulnMgmt /></SuspenseWrap>} />
+        {/* 자산 관리 */}
+        <Route path="assets" element={<SuspenseWrap><AssetManagement /></SuspenseWrap>} />
 
-        {/* Command */}
-        <Route path="asset/command-list" element={<SuspenseWrap><HomeCommand /></SuspenseWrap>} />
+        {/* 네트워크 세그먼트 */}
+        <Route path="network-segments" element={<SuspenseWrap><NetworkSegments /></SuspenseWrap>} />
 
         <Route index element={<Navigate to="dashboard/dashboard-home" replace />} />
       </Route>
