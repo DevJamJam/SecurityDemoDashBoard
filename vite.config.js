@@ -37,4 +37,11 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
+    css: false,
+    include: ["src/test/**/*.test.{js,jsx}"],
+  },
 });

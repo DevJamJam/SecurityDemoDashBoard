@@ -32,3 +32,8 @@ Thumbs.db
 # Vite
 .vite/
 vite.config.js.timestamp-*
+
+# Playwright e2e test artifacts
+test-results/
+playwright-report/
+e2e/screenshots/
