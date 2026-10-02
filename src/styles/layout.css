@@ -246,12 +246,6 @@ body.dark .header__badge {
   line-height: var(--line-height-tight);
 }
 
-.page-header__breadcrumb {
-  font-size: var(--font-12);
-  color: var(--sub-text-color);
-  margin-bottom: 4px;
-}
-
 .page-header__actions {
   display: flex;
   align-items: center;

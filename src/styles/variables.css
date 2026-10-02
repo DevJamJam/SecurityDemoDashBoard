@@ -9,9 +9,7 @@
 
   /* layout */
   --app-shell-max-width: 2560px;
-  --dashboard-shell-max-width: 3440px;
   --container-max-width: var(--app-shell-max-width);
-  --container-min-width: 0px;
   --header-height: 60px;
   --sidebar-width: 280px;
   --sidebar-width-lg: 330px;
@@ -36,6 +34,7 @@
 
   /* text */
   --text-color: #1f2937;
+  --text-primary: #1f2937;
   --text-secondary: #5b6677;
   --text-muted: #7a8699;
   --text-weak: #98a2b3;
@@ -49,8 +48,6 @@
   --brand-cve:       #7c3aed;   /* 취약점 스캔 — 바이올렛 */
   --brand-command:   #d97706;   /* 원격 명령 — 앰버 */
   --brand-assets:    #0e7490;   /* 자산 인벤토리 — 테일 다크 */
-  --brand-vuln-track: #0891b2;
-  --brand-vuln-mgmt:  #d97706;
 
   /* status */
   --status-info: #0891b2;
@@ -72,15 +69,11 @@
   --accent-danger-bg: #fff1f3;
   --accent-neutral-bg: #f5f7fa;
 
-  /* charts only */
-  --chart-point-weak: #9bc4f8;
-  --chart-point-plan: #95d4a5;
-  --chart-point-assets: #f0bf5a;
+  /* charts — pastel palette */
   --circle-point-blue: #9bc4f8;
   --circle-point-green: #95d4a5;
   --circle-point-red: #f39298;
   --circle-point-orange: #f4b36d;
-  --chart-purple-soft: #c7b7ff;
 
   /* table / form / pagination */
   --search-label: #f2f5f9;
@@ -95,33 +88,16 @@
   --button-fail: #667085;
   --button-text: #ffffff;
 
-  /* result / alert */
-  --result-status-success: #16a34a;
+  /* result / alert (base.css SweetAlert 및 modals.css에서 사용) */
   --result-status-danger: #dc2626;
-  --result-status-warning: #d97706;
-  --result-status-sub: #111827;
-  --alert-level-1: #16a34a;
   --alert-level-2: #d97706;
   --alert-level-3: #ea580c;
-  --alert-level-4: #dc2626;
-  --status-open: #fee2e2;
-  --status-mitigated: #fef3c7;
-  --status-fixed: #dcfce7;
 
-  /* legacy aliases */
-  --mn-text-dashboard: var(--brand-dashboard);
+  /* legacy aliases — 대시보드 CSS 호환 */
   --mn-text-cce: var(--brand-cce);
   --mn-text-cve: var(--brand-cve);
-  --mn-text-command: var(--brand-command);
   --point-dashboard: rgba(109, 89, 244, 0.08);
   --point-cce: rgba(37, 99, 235, 0.08);
-  --point-cve: rgba(15, 159, 148, 0.08);
-  --point-assets: rgba(217, 119, 6, 0.08);
-  --point-command: rgba(47, 158, 68, 0.08);
-  --vuln-track-main: var(--brand-vuln-track);
-  --vuln-track-bg: rgba(63, 143, 86, 0.1);
-  --vuln-mgmt-main: var(--brand-vuln-mgmt);
-  --vuln-mgmt-bg: rgba(217, 119, 6, 0.1);
 
   --table-accent: #94a3b8;
 
@@ -131,30 +107,86 @@
   --paging-h: 40px;
   --page-padding: 12px;
 
-  --code-bg: #1f2430;
-  --code-text: #f5f7fa;
+  --color-surface: #ffffff;
+  --surface-base: #ffffff;
   --overlay-loading: rgba(255, 255, 255, 0.7);
   --overlay-modal: rgba(0, 0, 0, 0.5);
-  --overlay-lightbox: rgba(0, 0, 0, 0.85);
-  --surface-overlay-12: rgba(255, 255, 255, 0.12);
-  --surface-overlay-24: rgba(255, 255, 255, 0.24);
   --focus-ring: rgba(37, 99, 235, 0.3);
+
+  /* ── Alias tokens (components.css / layout.css 호환) ── */
+  --primary-color: #0891b2;
+  --accent-color: #0891b2;
+  --accent-rgb: 8, 145, 178;
+  --sub-text-color: #5b6677;
+  --border-color: #d9e2ec;
+  --panel-color: #ffffff;
+  --hover-bg: rgba(15, 23, 42, 0.06);
+  --accent-light-color: #edf4ff;
+  --success-color: #16a34a;
+  --warning-color: #f0b763;
+  --danger-color: #dc2626;
+  /* spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  /* font sizes */
+  --font-10: 10px;
+  --font-12: 12px;
+  --font-13: 13px;
+  --font-14: 14px;
+  --font-16: 16px;
+  --font-18: 18px;
+  --font-20: 20px;
+  --font-22: 22px;
+  --font-24: 24px;
+  --font-28: 28px;
+  /* border radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  /* shadow */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  /* misc */
+  --line-height-tight: 1.2;
+  /* status badge colors */
+  --status-completed-bg: #dcfce7;
+  --status-completed-text: #15803d;
+  --status-in-progress-bg: #dbeafe;
+  --status-in-progress-text: #1d4ed8;
+  --status-scheduled-bg: #f1f5f9;
+  --status-scheduled-text: #475569;
+  --status-failed-bg: #fee2e2;
+  --status-failed-text: #dc2626;
+  --status-running-bg: #ede9fe;
+  --status-running-text: #7c3aed;
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #b45309;
+  --status-active-bg: #dcfce7;
+  --status-active-text: #15803d;
+  --status-inactive-bg: #f1f5f9;
+  --status-inactive-text: #64748b;
+  --status-in-review-bg: #fff3cd;
+  --status-in-review-text: #92400e;
+  --status-approved-bg: #dcfce7;
+  --status-approved-text: #15803d;
+  /* layout aliases */
+  --header-bg: #ffffff;
+  --header-border: #d9e2ec;
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #5b6677;
+  --sidebar-hover-bg: rgba(15, 23, 42, 0.06);
+  --sidebar-text-active: #1f2937;
+  --sidebar-active-bg: #edf4ff;
+  --sidebar-active-border: #0891b2;
 }
 
 body.dark {
   color-scheme: dark;
-
-  --app-shell-max-width: 2560px;
-  --dashboard-shell-max-width: 3440px;
-  --container-max-width: var(--app-shell-max-width);
-  --container-min-width: 0px;
-  --header-height: 60px;
-  --sidebar-width: 280px;
-  --sidebar-width-tablet: 240px;
-  --sidebar-width-collapsed: 48px;
-  --content-padding: 16px;
-  --content-padding-tablet: 14px;
-  --content-padding-mobile: 12px;
 
   --bg-color: #0f1720;
   --bg-elevated: #111c2a;
@@ -169,6 +201,7 @@ body.dark {
   --divider-strong: #40607f;
 
   --text-color: #edf2f7;
+  --text-primary: #edf2f7;
   --text-secondary: #c5d0dd;
   --text-muted: #9fb0c3;
   --text-weak: #7f93aa;
@@ -181,8 +214,6 @@ body.dark {
   --brand-cve:       #a78bfa;
   --brand-command:   #fbbf24;
   --brand-assets:    #22d3ee;
-  --brand-vuln-track: #38bdf8;
-  --brand-vuln-mgmt:  #fbbf24;
 
   --status-info: #38bdf8;
   --status-success: #63d38a;
@@ -202,14 +233,10 @@ body.dark {
   --accent-danger-bg: rgba(255, 123, 123, 0.12);
   --accent-neutral-bg: rgba(148, 163, 184, 0.12);
 
-  --chart-point-weak: #7aaef0;
-  --chart-point-plan: #7dc997;
-  --chart-point-assets: #f0bf5a;
   --circle-point-blue: #7aaef0;
   --circle-point-green: #7dc997;
   --circle-point-red: #f08d97;
   --circle-point-orange: #f4b36d;
-  --chart-purple-soft: #baa8ff;
 
   --search-label: #1a2a3d;
   --search-label-text: #9fb0c3;
@@ -223,31 +250,14 @@ body.dark {
   --button-fail: #667085;
   --button-text: #ffffff;
 
-  --result-status-success: #63d38a;
   --result-status-danger: #ff7b7b;
-  --result-status-warning: #f0b763;
-  --result-status-sub: #f8fafc;
-  --alert-level-1: #63d38a;
   --alert-level-2: #f0b763;
   --alert-level-3: #ff9d5c;
-  --alert-level-4: #ff7b7b;
-  --status-open: rgba(255, 123, 123, 0.16);
-  --status-mitigated: rgba(240, 183, 99, 0.16);
-  --status-fixed: rgba(99, 211, 138, 0.16);
 
-  --mn-text-dashboard: var(--brand-dashboard);
   --mn-text-cce: var(--brand-cce);
   --mn-text-cve: var(--brand-cve);
-  --mn-text-command: var(--brand-command);
   --point-dashboard: rgba(184, 168, 255, 0.1);
   --point-cce: rgba(127, 176, 255, 0.1);
-  --point-cve: rgba(83, 216, 207, 0.1);
-  --point-assets: rgba(240, 183, 99, 0.1);
-  --point-command: rgba(99, 211, 138, 0.1);
-  --vuln-track-main: var(--brand-vuln-track);
-  --vuln-track-bg: rgba(145, 201, 138, 0.12);
-  --vuln-mgmt-main: var(--brand-vuln-mgmt);
-  --vuln-mgmt-bg: rgba(240, 183, 99, 0.12);
 
   --table-accent: #94a3b8;
 
@@ -257,12 +267,52 @@ body.dark {
   --paging-h: 40px;
   --page-padding: 12px;
 
-  --code-bg: #0d1525;
-  --code-text: #f5f7fa;
+  --color-surface: #152233;
+  --surface-base: #152233;
   --overlay-loading: rgba(15, 23, 42, 0.7);
   --overlay-modal: rgba(0, 0, 0, 0.65);
-  --overlay-lightbox: rgba(0, 0, 0, 0.85);
-  --surface-overlay-12: rgba(255, 255, 255, 0.12);
-  --surface-overlay-24: rgba(255, 255, 255, 0.24);
   --focus-ring: rgba(127, 176, 255, 0.4);
+
+  /* ── Alias tokens (components.css / layout.css 호환) ── */
+  --primary-color: #38bdf8;
+  --accent-color: #38bdf8;
+  --accent-rgb: 56, 189, 248;
+  --sub-text-color: #c5d0dd;
+  --border-color: #29415d;
+  --panel-color: #152233;
+  --hover-bg: rgba(255, 255, 255, 0.06);
+  --accent-light-color: rgba(127, 176, 255, 0.12);
+  --success-color: #63d38a;
+  --warning-color: #f0b763;
+  --danger-color: #ff7b7b;
+  /* status badge colors */
+  --status-completed-bg: rgba(99, 211, 138, 0.15);
+  --status-completed-text: #63d38a;
+  --status-in-progress-bg: rgba(127, 176, 255, 0.15);
+  --status-in-progress-text: #7fb0ff;
+  --status-scheduled-bg: rgba(148, 163, 184, 0.12);
+  --status-scheduled-text: #94a3b8;
+  --status-failed-bg: rgba(255, 123, 123, 0.15);
+  --status-failed-text: #ff7b7b;
+  --status-running-bg: rgba(167, 139, 250, 0.15);
+  --status-running-text: #a78bfa;
+  --status-pending-bg: rgba(240, 183, 99, 0.15);
+  --status-pending-text: #f0b763;
+  --status-active-bg: rgba(99, 211, 138, 0.15);
+  --status-active-text: #63d38a;
+  --status-inactive-bg: rgba(148, 163, 184, 0.12);
+  --status-inactive-text: #94a3b8;
+  --status-in-review-bg: rgba(240, 183, 99, 0.15);
+  --status-in-review-text: #f0b763;
+  --status-approved-bg: rgba(99, 211, 138, 0.15);
+  --status-approved-text: #63d38a;
+  /* layout aliases */
+  --header-bg: #152233;
+  --header-border: #29415d;
+  --sidebar-bg: #152233;
+  --sidebar-text: #c5d0dd;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-text-active: #edf2f7;
+  --sidebar-active-bg: rgba(127, 176, 255, 0.12);
+  --sidebar-active-border: #38bdf8;
 }

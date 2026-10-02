@@ -131,8 +131,15 @@
 
 .admin-org-tree4__row.selected,
 .admin-org-tree4__row.is-selected {
-  background-color: rgba(92, 106, 196, 0.1);
-  outline: 1px solid rgba(92, 106, 196, 0.18);
+  background-color: rgba(92, 106, 196, 0.14);
+  outline: none;
+  box-shadow: inset 3px 0 0 var(--brand-primary, #5c6ac4);
+}
+
+.admin-org-tree4__row.selected .admin-org-tree4__label-text,
+.admin-org-tree4__row.is-selected .admin-org-tree4__label-text {
+  color: var(--brand-primary, #5c6ac4);
+  font-weight: 700;
 }
 
 .admin-org-tree4__row.disabled {
@@ -449,7 +456,7 @@
 
 .admin-collapsible-card.danger {
   border-color: rgba(220, 38, 38, 0.24);
-  background-color: #f8c7d2;
+  background-color: var(--accent-danger-bg);
 }
 
 .admin-collapsible-card.warning {
@@ -620,7 +627,7 @@ button.admin-alert-panel__summary-box {
 
 button.admin-alert-panel__summary-box:hover {
   transform: translateY(-1px);
-  background: var(--button-text);
+  background: var(--mn-color);
 }
 
 button.admin-alert-panel__summary-box.danger.is-active {
@@ -640,7 +647,7 @@ button.admin-alert-panel__summary-box.info.is-active {
   margin-top: 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--button-text);
+  background: var(--mn-color);
   max-height: 360px;
   overflow-y: auto;
   animation: dashboardReveal 0.18s ease;
@@ -656,7 +663,7 @@ button.admin-alert-panel__summary-box.info.is-active {
 .admin-alert-panel__item {
   padding: 10px 12px;
   border-radius: 10px;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px solid transparent;
   cursor: pointer;
   transition:
@@ -715,7 +722,7 @@ button.admin-alert-panel__summary-box.info.is-active {
   padding: 8px 10px;
   font-size: 12.5px;
   color: var(--text-color);
-  background: var(--button-text);
+  background: var(--surface-muted);
   border: 1px solid var(--border);
   border-radius: 8px;
   line-height: 1.55;
@@ -759,7 +766,7 @@ button.admin-alert-panel__summary-box.info.is-active {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--overlay-loading);
   backdrop-filter: blur(1.5px);
   -webkit-backdrop-filter: blur(1.5px);
   border-radius: 12px;

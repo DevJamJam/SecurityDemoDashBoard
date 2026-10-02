@@ -322,11 +322,11 @@
 }
 
 .design4-rate-toggle.is-active {
-  border-color: var(--mn-text-cce);
+  border-color: var(--brand-primary);
   border-width: 2px;
   padding: 11px 13px;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.22);
-  background: var(--surface-base);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 8, 145, 178), 0.22);
+  background: var(--surface-soft);
 }
 
 /* ---------- process status board ---------- */
@@ -402,7 +402,7 @@
 }
 .design4-count-badge--primary {
   color: var(--brand-dashboard);
-  border-color: rgba(109, 89, 244, 0.35);
+  border-color: rgba(var(--accent-rgb, 8, 145, 178), 0.35);
 }
 .design4-count-badge--warning {
   color: var(--status-warning);
@@ -613,7 +613,73 @@
   color: var(--brand-command, #d97706);
 }
 
-/* ── tab group ── */
+/* ── 대시보드 → 페이지 바로가기 링크 ── */
+.admin-home-statusbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.scope-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+}
+
+.scope-nav-link:hover {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  background: rgba(var(--accent-rgb, 14, 165, 233), 0.06);
+}
+
+.scope-nav-link__arrow {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* ── 섹션 탭바 (월별점검현황, 주요이슈) ── */
+.d4-section-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 14px;
+  gap: 0;
+}
+
+.d4-section-tab {
+  padding: 8px 22px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s;
+  white-space: nowrap;
+}
+
+.d4-section-tab:hover {
+  color: var(--text-color);
+}
+
+.d4-section-tab--active {
+  color: var(--brand-primary);
+  border-bottom-color: var(--brand-primary);
+}
+
+/* ── legacy tab group (다른 곳 재사용) ── */
 .d4-tab-group {
   display: flex;
   gap: 3px;

@@ -659,7 +659,7 @@
   height: 720px;
   max-width: 96vw;
   max-height: 94vh;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 22px 24px;
@@ -716,7 +716,7 @@
   min-height: 32px;
   padding: 0 14px;
   border: 1px solid var(--border);
-  background: var(--button-text);
+  background: var(--mn-color);
   color: var(--text-color);
   font-size: 13px;
   font-weight: 600;
@@ -872,7 +872,7 @@
   justify-content: center;
   gap: 10px;
   padding: 48px 16px;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px dashed var(--border);
   border-radius: 12px;
   color: var(--text-secondary);
@@ -897,7 +897,7 @@
   text-align: center;
   color: var(--text-muted);
   font-size: 13px;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px dashed var(--border);
   border-radius: 12px;
 }
@@ -980,7 +980,7 @@
 }
 
 .admin-detail-modal__alert-card {
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
@@ -1061,7 +1061,7 @@
   padding: 10px 12px;
   font-size: 13px;
   color: var(--text-color);
-  background: var(--button-text);
+  background: var(--mn-color);
   border-radius: 8px;
   line-height: 1.6;
   border: 1px solid var(--border);
@@ -1222,7 +1222,7 @@
   flex-direction: column;
   gap: 14px;
   padding: 16px 18px;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
@@ -1257,7 +1257,7 @@
   font-size: 13px;
   font-weight: 700;
   border: 1px solid var(--border);
-  background: var(--button-text);
+  background: var(--mn-color);
 }
 
 .remediation-summary-card__status-chip.status-open {
@@ -1390,7 +1390,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 2px solid var(--text-muted);
   box-sizing: border-box;
   z-index: 1;
@@ -1454,7 +1454,7 @@
 .remediation-timeline__memo {
   margin-top: 8px;
   padding: 10px 12px;
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 12.5px;
@@ -1469,7 +1469,7 @@
 }
 
 .remediation-card {
-  background: var(--button-text);
+  background: var(--mn-color);
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
@@ -1515,7 +1515,7 @@
   font-size: 11.5px;
   font-weight: 700;
   border: 1px solid var(--border);
-  background: var(--button-text);
+  background: var(--mn-color);
 }
 .remediation-card__status-chip.review-draft {
   color: var(--text-muted);
