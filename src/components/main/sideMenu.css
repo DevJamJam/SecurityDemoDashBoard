@@ -72,59 +72,6 @@
   display: block;
 }
 
-/* ── 플라이아웃 메뉴 ── */
-.sedo-nav__flyout {
-  position: fixed;
-  z-index: 200;
-  min-width: 160px;
-  background: var(--mn-color);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.sedo-nav__flyout-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-  padding: 4px 8px 6px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-
-.sedo-nav__flyout-item {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 400;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  white-space: nowrap;
-}
-
-.sedo-nav__flyout-item:hover {
-  background: var(--hover-color);
-  color: var(--text-color);
-}
-
-.sedo-nav__flyout-item--active {
-  color: var(--brand-primary, #0891b2);
-  font-weight: 600;
-  background: var(--accent-info-bg);
-}
-
 @media (max-width: 768px) {
   .sedo-nav {
     display: none;

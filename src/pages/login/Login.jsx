@@ -42,38 +42,31 @@ function Login() {
   };
 
   return (
-    <div className="content">
-      <div className="login_top_content_wrapper login">
-        <div>
-          <div><p>Email</p></div>
-          <div>
-            <input value={userId} onChange={(e) => setUserId(e.target.value)} />
-          </div>
+    <div className="login_top_content_wrapper">
+      <div>
+        <p>Email</p>
+        <input value={userId} placeholder="admin@sedo.dev" onChange={(e) => setUserId(e.target.value)} />
+      </div>
+      <div>
+        <p>Password</p>
+        <input
+          type="password"
+          value={password}
+          placeholder="비밀번호 입력"
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }}
+        />
+      </div>
+      <div className="login_bottom_content_wrapper">
+        <button className="login_btn" onClick={handleLogin}>LOGIN</button>
+        <div className="login_btn_wrapper">
+          <button className="login_btn_none" onClick={handleFindId}>아이디 찾기</button>
+          |
+          <button className="login_btn_none" onClick={handleResetPassword}>비밀번호 초기화</button>
         </div>
-        <div>
-          <div><p>Password</p></div>
-          <div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }}
-            />
-          </div>
-        </div>
-        <div className="login_bottom_content_wrapper">
-          <button className="login_btn" onClick={handleLogin}>LOGIN</button>
-          <div className="login_btn_wrapper">
-            <button className="login_btn_none" onClick={handleFindId}>아이디 찾기</button>
-            |
-            <button className="login_btn_none" onClick={handleResetPassword}>비밀번호 초기화</button>
-          </div>
-          <div className="login_signup_wrapper">
-            <p>계정이 없으신가요?</p>
-            <button onClick={signupHandle} className="login_btn_none text">
-              <span>회원가입</span>
-            </button>
-          </div>
+        <div className="login_signup_wrapper">
+          <p>계정이 없으신가요?</p>
+          <button onClick={signupHandle} className="login_btn_none text">회원가입</button>
         </div>
       </div>
     </div>

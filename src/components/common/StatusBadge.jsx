@@ -11,10 +11,12 @@ const STATUS_LABELS = {
   inactive: "비활성",
   in_review: "검토중",
   approved: "승인",
+  open: "미조치",
+  resolved: "조치 완료",
 };
 
-export default function StatusBadge({ status, dot = true }) {
-  const label = STATUS_LABELS[status] || status;
+export default function StatusBadge({ status, label: labelProp, dot = true }) {
+  const label = labelProp || STATUS_LABELS[status] || status;
   return (
     <span
       className={classnames(

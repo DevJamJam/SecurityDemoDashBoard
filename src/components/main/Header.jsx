@@ -4,6 +4,7 @@ import PasswordChangeModal from "./PasswordChangeModal";
 import "./header.css";
 import useAuthStore from "@/store/auth/useAuthStore";
 import useLayoutStore from "@/store/common/useLayoutStore";
+import { useThemeStore } from "@/store/theme/useThemeStore";
 import { useMainTabStore } from "@/store/navigation/useMainTabStore";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -43,6 +44,7 @@ export default function Header() {
     }
   };
 
+  const isDark = useThemeStore((state) => state.isDark);
   const roleLabel = user?.role === 1 ? "관리자" : "부서장";
 
   return (
@@ -50,7 +52,7 @@ export default function Header() {
       <header className="sedo-header">
         <div className="sedo-header__brand">
           <img
-            src={`${import.meta.env.BASE_URL}sedo-logo.svg`}
+            src={`${import.meta.env.BASE_URL}${isDark ? "sedo-logo-dark.svg" : "sedo-logo.svg"}`}
             alt="SeDo"
             className="sedo-header__logo"
           />

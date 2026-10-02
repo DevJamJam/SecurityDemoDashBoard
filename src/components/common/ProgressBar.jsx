@@ -2,6 +2,8 @@ export default function ProgressBar({
   percent,
   current,
   total,
+  label,
+  percents,
   showLabel = true,
   height = 6,
 }) {
@@ -19,16 +21,24 @@ export default function ProgressBar({
 
   return (
     <div className="progress-bar">
+      {label && (
+        <div className="progress-bar__named-header">
+          <span className="progress-bar__name">{label}</span>
+          <span className="progress-bar__pct-right" style={{ color: pct >= 70 ? "var(--success-color)" : pct >= 40 ? "var(--warning-color)" : "var(--danger-color)" }}>
+            {pct}점
+          </span>
+        </div>
+      )}
       <div className="progress-bar__track" style={{ height }}>
         <div
           className={`progress-bar__fill ${colorClass}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      {showLabel && (
+      {showLabel && !label && (
         <div className="progress-bar__label">
           <span>{pct}%</span>
-          {typeof current === "number" && typeof total === "number" && (
+          {!percents && typeof current === "number" && typeof total === "number" && (
             <span>{current} / {total}</span>
           )}
         </div>
