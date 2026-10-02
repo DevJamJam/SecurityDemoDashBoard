@@ -136,7 +136,7 @@ npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
 | `POST /api/dashboard` | `dept_id` 기반 부서별 KPI 반환 |
 | `POST /api/dashboard/alerts` | severity별 알림 목록 |
 | `POST /api/dashboard/pending/*` | 승인/조치대기 드릴다운 |
-| `POST /api/dashboard/trend-step-assets` | 월별 운영 추이 드릴다운 자산 목록 |
+| `POST /api/dashboard/trend/assets` | 월별 운영 추이 드릴다운 자산 목록 |
 | `POST /api/dashboard/unchecked/*` | 미점검 자산 드릴다운 |
 
 **API 규격 — 서브 페이지 (REST)**
@@ -174,7 +174,9 @@ src/
 ├── api/
 │   ├── auth/auth.js              # login, logout, fetchLoginUser
 │   ├── cce/                      # 대시보드 팝업 API (dashboardPopups, dashboardTrend)
-│   └── securityDemoApi.js        # 서브 페이지 REST API (inspection-plans, assets ...)
+│   └── securityDemoApi.js        # 서브 페이지 REST 호출 함수 모음 (axios 인스턴스 분리)
+├── lib/
+│   └── sedoApi.js                # axios 기본 인스턴스 + resolveEnvelope() 유틸
 ├── components/
 │   ├── common/                   # Button, CommonTable, SearchMenu, Pagination, StatusBadge, ProgressBar
 │   ├── layout/                   # PageHeader
