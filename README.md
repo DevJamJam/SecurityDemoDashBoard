@@ -37,7 +37,6 @@ npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
 - KPI 카드 6종 (고위험 취약점·미점검 자산·승인대기·조치대기·진행중 점검·명령 실패)
 - **[KPI 클릭 → 요약 모달 → 자산 목록 → 자산 이슈 → 조치 이력]** 최대 4 depth 드릴다운
 - CCE/CVE 운영 추이 매트릭스 테이블 (월별 컬럼, ▲▼ delta, 5단계 단계현황)
-- Recharts LineChart 보안율·조치율 추이 시각화
 - 관리자(role=1) / 부서장 권한별 조직 노드 선택 제한
 - 부서별 Mock 데이터 완전 분리 — 드릴다운 자산 수와 운영 추이 카운트 정합성 보장
 - **상태바 바로가기** — `결과 조회 →` 클릭 시 pending 필터 자동 적용, `실행 모니터 →` 클릭 시 running 탭 자동 활성화 (React Router `navigate state` 활용)
@@ -52,7 +51,7 @@ npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
 
 - 실행 작업 카드 그리드 (`execution-grid`) — 진행률 ProgressBar 실시간 표시
 - **상태 필터 탭** (전체/실행중/완료/예약/실패) — 로컬 필터로 API 재호출 없이 즉시 분류
-- **running 작업 존재 시 10초 자동 갱신** — polling이 멈추면 자동 중단, 필터 상태 유지
+- **running 작업 존재 시 10초 자동 갱신** — 실행 중 작업이 없어지거나 화면을 떠나면 갱신 중단, 필터 상태 유지
 - **시작/중단 버튼** → SweetAlert2 확인 다이얼로그 → Zustand 상태 업데이트 → localStorage 영속
 - 새로고침 후에도 변경된 작업 상태가 유지되며 "상태 초기화" 버튼으로 원복 가능
 
@@ -73,8 +72,8 @@ npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
 ### 6. 네트워크 세그먼트 (Network Segments)
 
 - 10개 세그먼트 카드 — 위험도(low·medium·high) 색상 배지, 취약점 수·오픈 포트 현황
-- **편집 버튼** → 인라인 폼으로 전환 → 저장 시 SweetAlert2 확인 + 낙관적 UI 업데이트
-- SVG 기반 네트워크 토폴로지 맵 — 세그먼트 노드 클릭 시 연결 관계 하이라이트
+- **편집 버튼** → 인라인 폼으로 전환 → 저장 전 SweetAlert2 확인 후 API 응답 성공 시 해당 세그먼트 갱신
+- React Flow 기반 네트워크 토폴로지 맵 — 세그먼트 노드 클릭 시 연결 관계 하이라이트
 - **통신 매트릭스 탭** — 세그먼트×세그먼트 그리드, allow/partial/block/alert 상태 색상 구분, 행·열 크로스 하이라이트
 - CIDR·IP 범위·자산 수·최근 점검일·설명·태그 표시
 
@@ -85,7 +84,7 @@ npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
 - SweetAlert2 다국어 확인/오류 다이얼로그
 - MSW v2 Service Worker — 실제 서버 없이 브라우저에서 완전한 API 동작
 - `resolveEnvelope()` 유틸 — `{ RESULT, CODE }` / `{ data }` 등 4종 응답 형식을 단일 인터페이스로 흡수 (`src/lib/sedoApi.js`)
-- Playwright e2e 35개 테스트 — 로그인·대시보드 드릴다운·페이지별 렌더링·에러 시뮬레이션·크로스 페이지 네비게이션 검증
+- Playwright e2e 34개 테스트 — 로그인·대시보드 드릴다운·페이지별 렌더링·에러 시뮬레이션·크로스 페이지 네비게이션 검증
 
 ---
 
@@ -97,8 +96,8 @@ npm run dev        # http://localhost:8080/SecurityDemoDashBoard/
 | Routing | React Router v7 |
 | State | Zustand v5 (persist + localStorage) |
 | Mock API | MSW v2 (Service Worker, 브라우저 내 완전 동작) |
-| HTTP | Axios (baseURL `/api`, timeout 10s) |
-| Chart | Recharts (LineChart 보안율/조치율 추이) |
+| HTTP | Axios (baseURL `/api`, 대시보드용 20초·서브 페이지용 10초) |
+| 네트워크 시각화 | React Flow 토폴로지 + 통신 매트릭스 테이블 |
 | Dialog | SweetAlert2 |
 | Icons | React Icons |
 | Style | CSS Variables — 라이트/다크 테마 토큰 시스템 |
@@ -181,7 +180,7 @@ src/
 │   ├── common/                   # Button, CommonTable, SearchMenu, Pagination, StatusBadge, ProgressBar
 │   ├── layout/                   # PageHeader
 │   ├── main/                     # Header, SideMenu, Breadcrumb (NAV_CONFIG 기반)
-│   ├── network/                  # NetworkTopologyMap (SVG 토폴로지), NetworkConnectionMatrix (통신 매트릭스)
+│   ├── network/                  # NetworkTopologyMap (React Flow 토폴로지), NetworkConnectionMatrix (통신 매트릭스)
 │   └── dashboard/                # 대시보드 전용 컴포넌트 (OrgTree, KPI, Modal, TrendTable ...)
 ├── config/
 │   ├── navConfig.js              # 사이드메뉴 라우팅 설정
@@ -246,7 +245,7 @@ npm run build && npx playwright test
 
 ### e2e 테스트 (Playwright)
 
-`e2e/verify.spec.js` — 35개 테스트
+`e2e/verify.spec.js` — 34개 테스트
 
 | 범위 | 내용 |
 |------|------|
